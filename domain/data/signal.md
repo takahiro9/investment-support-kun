@@ -1,0 +1,82 @@
+# Signal — 時系列指標
+
+## 概要
+
+売上高・営業利益率などの数値は、テキストのFinding/Thoughtだけでは追跡しづらい。決算資料・市場データ等から抽出した数値を時系列データポイントとして別立てで保持する。
+
+4分類を最初から持たせる（初版は財務指標のみだったが、遅行指標に偏っていたため改訂）。
+
+| `category` | 例 | 特性 |
+|---|---|---|
+| `financial` | 売上高、営業利益率、KPI推移 | 遅行（決算に出た時点で株価は動き終わっている） |
+| `operational` | 出荷台数、稼働率、受注残、解約率 | やや先行 |
+| `leading` | 求人数、設備投資計画、価格改定、代理店動向、業界出荷統計、政策施行スケジュール | 先行。予測の精度に直結 |
+| `market` | 株価、バリュエーション、アナリストコンセンサスの改訂履歴 | 織り込み度の判定に必須 |
+
+抽出優先順位はmarket/leadingを先行させる（financialは後回しでよい）。
+
+### 抽出元（2026-07-26決定）
+
+`market`・`financial`は構造化データAPI（EDINET/証券会社API等）を優先する——安価かつ正確に取得できるため。一方`leading`（設備投資計画・価格改定・経営者コメントのトーン変化等）は決算資料・適時開示・IR説明会資料などの**自然言語にしかない情報**であることが多く、LLMによる自然言語処理（Findingの本文からの抽出）を前提とする。「構造化APIを優先し自然言語は補完」ではなく、**Signal種別ごとに主たる抽出元が異なる**という設計になる。
+
+### Thesisの前提への紐付け
+
+Signalは単体では意味を持たない。「この指標はThesisのどの前提を検証するためのものか」を`validatesThesisId`/`validatesAssumption`で明示的に紐づける。紐付けのないSignalは「何のために見ているか分からない時系列データ置き場」になるため、この紐付けを必須とする。
+
+---
+
+## 属性一覧
+
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| `id` | string (UUID) | ✅ | 一意識別子 |
+| `companyId` | string (FK) | ✅ | 対象Company |
+| `category` | `SignalCategory` | ✅ | 指標の分類 |
+| `metric` | string | ✅ | 指標名（例: `operating_margin`、`job_postings_count`） |
+| `period` | string | ✅ | 対象期間・時点（例: `2027Q2`、日次データの場合は日付） |
+| `value` | number | ✅ | 値 |
+| `unit` | string | ❌ | 単位（例: `%`、`件`、`円`） |
+| `sourceFindingId` | string (FK) | ❌ | 抽出元のFinding。構造化APIから直接取得した場合はnullでもよい |
+| `extractionMethod` | `ExtractionMethod` | ✅ | どう取得した値か |
+| `validatesThesisId` | string (FK) | ✅ | この指標が前提を検証する対象のThesis |
+| `validatesAssumption` | string | ✅ | Thesisのどの前提を検証するものかの説明（自由記述） |
+| `createdAt` | datetime | ✅ | 作成日時 |
+
+---
+
+## 値オブジェクト
+
+### `SignalCategory`
+
+上記「概要」の表を参照（`financial` / `operational` / `leading` / `market`）。
+
+### `ExtractionMethod`
+
+| 値 | 説明 |
+|---|---|
+| `manual` | 人間がFindingを読んで手入力（Phase 3の当初はこれが中心） |
+| `llm_extraction` | Findingの自然言語本文からLLMで抽出 |
+| `structured_api` | EDINET・証券会社API等の構造化データソースから直接取得 |
+
+---
+
+## 不変条件・ビジネスルール
+
+- `companyId`/`validatesThesisId` は必須。紐付けのないSignalは作成できない（「何のために見ているか分からない時系列データ置き場にしない」という設計方針を型で強制する）
+- `validatesThesisId` が指すThesisは、`companyId` が指すのと同じCompanyのThesisであること
+- `extractionMethod=structured_api` の場合、`sourceFindingId` はnullでよい。`llm_extraction`/`manual` の場合は、可能な限り`sourceFindingId`を設定する（追跡可能性のため必須ではないが推奨）
+- 同一`companyId`/`metric`/`period`の組み合わせで複数のSignalを持つことは許容する（改訂・再取得による上書きではなく、履歴として積み上げる）
+
+---
+
+## 他ドメインオブジェクトとの関係
+
+- **Company** — Signalは1つのCompanyに紐づく（多対1）
+- **[Thesis](thesis.md)** — Signalは1つのThesisの前提を検証する（多対1、`validatesThesisId`）
+- **Finding** — 抽出元としてFindingを参照してよい（多対1、任意）
+
+---
+
+## 保存フォーマット（大方針）
+
+Signalは `data/vault/signals/<id>.md` に YAML フロントマターとして保存する（本文は基本的に使わない。時系列の1データポイントであり、論証を持たないため）。
