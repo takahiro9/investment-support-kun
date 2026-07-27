@@ -25,7 +25,7 @@ LAYERS = ["company", "sector", "theme", "macro", "market"]
 LAYER_REF = {
     "company": ("companyId", "companies"),
     "sector": ("sectorId", "sectors"),
-    "theme": ("themeId", None),  # Theme entity not implemented yet (Phase 4)
+    "theme": ("themeId", "themes"),
     "macro": (None, None),
     "market": ("companyId", "companies"),
 }
@@ -87,7 +87,8 @@ def cmd_register(args: argparse.Namespace) -> None:
         try:
             vault.read_entity(ref_entity, ref_value)
         except FileNotFoundError:
-            fail([f"{ref_entity[:-1].capitalize()} not found: {ref_value}"])
+            label = {"companies": "Company", "sectors": "Sector", "themes": "Theme"}[ref_entity]
+            fail([f"{label} not found: {ref_value}"])
             return
 
     if idx.find_by("sources", url=args.url):

@@ -157,14 +157,20 @@ def cmd_view(args: argparse.Namespace) -> None:
     all_finding_ids = {fid for _, tfm, _ in thoughts for fid in (tfm.get("findingIds") or [])}
     findings = _findings_for(all_finding_ids)
 
+    theses = [
+        {"id": tid, "statement": tfm.get("statement"), "status": tfm.get("status"), "updatedAt": tfm.get("updatedAt")}
+        for tid, tfm, _ in vault.list_entities("theses")
+        if tfm.get("companyId") == args.id
+    ]
+    theses.sort(key=lambda t: t.get("updatedAt") or "", reverse=True)
+
     print(
         json.dumps(
             {
                 "company": {**fm, "body": body},
                 "driverTree": driver_tree,
                 "findings": findings,
-                # Thesis is not implemented yet (Phase 2) — always empty for now.
-                "theses": [],
+                "theses": theses,
             },
             ensure_ascii=False,
         )

@@ -7,8 +7,35 @@ from __future__ import annotations
 
 import json
 
+import pyarrow as pa
+
 import index as idx
+import predictions
 import vault
+
+# Entities whose Vault frontmatter fields line up 1:1 with their index schema
+# (list-typed fields default to [] instead of None).
+GENERIC_ENTITIES = [
+    "sources",
+    "findings",
+    "thoughts",
+    "themes",
+    "theses",
+    "signals",
+    "strategy_recommendations",
+    "investment_actions",
+]
+
+
+def _row_from_frontmatter(entity: str, fm: dict) -> dict:
+    schema = idx.TABLE_SCHEMAS[entity]
+    row = {}
+    for field in schema:
+        value = fm.get(field.name)
+        if value is None and pa.types.is_list(field.type):
+            value = []
+        row[field.name] = value
+    return row
 
 
 def rebuild() -> dict:
@@ -49,48 +76,24 @@ def rebuild() -> dict:
         for _, fm, _ in companies
     ]
 
-    source_rows = [
-        {k: fm.get(k) for k in idx.TABLE_SCHEMAS["sources"].names}
-        for _, fm, _ in vault.list_entities("sources")
-    ]
-    finding_rows = [
-        {k: fm.get(k) for k in idx.TABLE_SCHEMAS["findings"].names if k != "tags"}
-        | {"tags": fm.get("tags") or []}
-        for _, fm, _ in vault.list_entities("findings")
-    ]
-    thought_rows = [
-        {
-            "id": fm["id"],
-            "findingIds": fm.get("findingIds") or [],
-            "companyIds": fm.get("companyIds") or [],
-            "sectorIds": fm.get("sectorIds") or [],
-            "themeIds": fm.get("themeIds") or [],
-            "driverNodeIds": fm.get("driverNodeIds") or [],
-            "type": fm.get("type"),
-            "createdAt": fm.get("createdAt"),
-            "tags": fm.get("tags") or [],
-        }
-        for _, fm, _ in vault.list_entities("thoughts")
-    ]
-
+    counts = {"sectors": len(sector_rows), "companies": len(company_rows)}
     if sector_rows:
         idx.get_table(db, "sectors").add(sector_rows)
     if company_rows:
         idx.get_table(db, "companies").add(company_rows)
-    if source_rows:
-        idx.get_table(db, "sources").add(source_rows)
-    if finding_rows:
-        idx.get_table(db, "findings").add(finding_rows)
-    if thought_rows:
-        idx.get_table(db, "thoughts").add(thought_rows)
 
-    return {
-        "sectors": len(sector_rows),
-        "companies": len(company_rows),
-        "sources": len(source_rows),
-        "findings": len(finding_rows),
-        "thoughts": len(thought_rows),
-    }
+    for entity in GENERIC_ENTITIES:
+        rows = [_row_from_frontmatter(entity, fm) for _, fm, _ in vault.list_entities(entity)]
+        counts[entity] = len(rows)
+        if rows:
+            idx.get_table(db, entity).add(rows)
+
+    prediction_rows = [predictions._index_row(fm) for _, fm, _ in vault.list_entities("predictions")]
+    counts["predictions"] = len(prediction_rows)
+    if prediction_rows:
+        idx.get_table(db, "predictions").add(prediction_rows)
+
+    return counts
 
 
 if __name__ == "__main__":
