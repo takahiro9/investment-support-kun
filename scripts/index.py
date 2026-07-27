@@ -6,6 +6,7 @@ data/vault/ via rebuild_index.py if it's ever missing or suspected stale.
 """
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 import lancedb
@@ -36,6 +37,49 @@ TABLE_SCHEMAS: dict[str, pa.Schema] = {
             ("updatedAt", pa.string()),
         ]
     ),
+    "sources": pa.schema(
+        [
+            ("id", pa.string()),
+            ("type", pa.string()),
+            ("layer", pa.string()),
+            ("companyId", pa.string()),
+            ("sectorId", pa.string()),
+            ("themeId", pa.string()),
+            ("name", pa.string()),
+            ("url", pa.string()),
+            ("description", pa.string()),
+            ("status", pa.string()),
+            ("lastFetchedAt", pa.string()),
+            ("createdAt", pa.string()),
+            ("updatedAt", pa.string()),
+        ]
+    ),
+    "findings": pa.schema(
+        [
+            ("id", pa.string()),
+            ("type", pa.string()),
+            ("title", pa.string()),
+            ("url", pa.string()),
+            ("sourceUrl", pa.string()),
+            ("evidenceTier", pa.string()),
+            ("savedAt", pa.string()),
+            ("contentUpdatedAt", pa.string()),
+            ("tags", pa.list_(pa.string())),
+        ]
+    ),
+    "thoughts": pa.schema(
+        [
+            ("id", pa.string()),
+            ("findingIds", pa.list_(pa.string())),
+            ("companyIds", pa.list_(pa.string())),
+            ("sectorIds", pa.list_(pa.string())),
+            ("themeIds", pa.list_(pa.string())),
+            ("driverNodeIds", pa.list_(pa.string())),
+            ("type", pa.string()),
+            ("createdAt", pa.string()),
+            ("tags", pa.list_(pa.string())),
+        ]
+    ),
 }
 
 
@@ -62,11 +106,14 @@ def upsert(entity_type: str, record: dict) -> None:
 
 
 def _normalize(records: list[dict]) -> list[dict]:
-    """pandas/pyarrow round-trips list columns as numpy ndarrays; make them JSON-safe."""
+    """pandas/pyarrow round-trips list columns as numpy ndarrays and nullable
+    scalars as NaN; make both JSON-safe (arrays -> list, NaN -> None)."""
     for record in records:
         for key, value in record.items():
             if hasattr(value, "tolist"):
                 record[key] = value.tolist()
+            elif isinstance(value, float) and math.isnan(value):
+                record[key] = None
     return records
 
 
@@ -85,4 +132,14 @@ def find_by(entity_type: str, **filters) -> list[dict]:
     df = get_table(db, entity_type).to_pandas()
     for key, value in filters.items():
         df = df[df[key] == value]
+    return _normalize(df.to_dict("records"))
+
+
+def find_containing(entity_type: str, field: str, value: str) -> list[dict]:
+    """Rows whose list-typed ``field`` contains ``value`` (e.g. companyIds)."""
+    db = connect()
+    if entity_type not in table_names(db):
+        return []
+    df = get_table(db, entity_type).to_pandas()
+    df = df[df[field].apply(lambda values: value in list(values))]
     return _normalize(df.to_dict("records"))

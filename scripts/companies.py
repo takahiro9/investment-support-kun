@@ -5,16 +5,22 @@
       --sector-ids <uuid1>,<uuid2> --primary-sector-id <uuid1> \
       [--driver-tree '[...]'] [--body "任意の本文"]
   uv run python scripts/companies.py list [--sector-id <uuid>]
+  uv run python scripts/companies.py view --id <uuid>
+  uv run python scripts/companies.py snapshot-context --id <uuid>
+  uv run python scripts/companies.py update-snapshot --id <uuid> --as-of 2024-06-01 --summary "..."
 """
 from __future__ import annotations
 
 import argparse
 import copy
 import json
+import re
 import sys
 
 import index as idx
 import vault
+
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def fail(errors: list[str]) -> None:
@@ -105,6 +111,131 @@ def cmd_list(args: argparse.Namespace) -> None:
     print(json.dumps(rows, ensure_ascii=False))
 
 
+def _company_thoughts(company_id: str) -> list[tuple[str, dict, str]]:
+    return [
+        (tid, tfm, tbody)
+        for tid, tfm, tbody in vault.list_entities("thoughts")
+        if company_id in (tfm.get("companyIds") or [])
+    ]
+
+
+def _findings_for(finding_ids: set[str]) -> list[dict]:
+    findings = []
+    for fid in finding_ids:
+        try:
+            ffm, _ = vault.read_entity("findings", fid)
+        except FileNotFoundError:
+            continue
+        findings.append(
+            {
+                "id": ffm["id"],
+                "type": ffm.get("type"),
+                "title": ffm.get("title"),
+                "url": ffm.get("url"),
+                "evidenceTier": ffm.get("evidenceTier"),
+                "savedAt": ffm.get("savedAt"),
+            }
+        )
+    findings.sort(key=lambda f: f.get("savedAt") or "", reverse=True)
+    return findings
+
+
+def cmd_view(args: argparse.Namespace) -> None:
+    try:
+        fm, body = vault.read_entity("companies", args.id)
+    except FileNotFoundError:
+        fail([f"Company not found: {args.id}"])
+        return
+
+    thoughts = _company_thoughts(args.id)
+    filled_node_ids = {n for _, tfm, _ in thoughts for n in (tfm.get("driverNodeIds") or [])}
+    driver_tree = [
+        {**node, "filled": node["id"] in filled_node_ids}
+        for node in (fm.get("driverTree") or [])
+    ]
+
+    all_finding_ids = {fid for _, tfm, _ in thoughts for fid in (tfm.get("findingIds") or [])}
+    findings = _findings_for(all_finding_ids)
+
+    print(
+        json.dumps(
+            {
+                "company": {**fm, "body": body},
+                "driverTree": driver_tree,
+                "findings": findings,
+                # Thesis is not implemented yet (Phase 2) — always empty for now.
+                "theses": [],
+            },
+            ensure_ascii=False,
+        )
+    )
+
+
+def cmd_snapshot_context(args: argparse.Namespace) -> None:
+    try:
+        fm, _ = vault.read_entity("companies", args.id)
+    except FileNotFoundError:
+        fail([f"Company not found: {args.id}"])
+        return
+
+    previous_snapshot = fm.get("currentSnapshot")
+    previous_as_of = previous_snapshot["asOf"] if previous_snapshot else None
+
+    thoughts = [
+        {
+            "id": tid,
+            "type": tfm.get("type"),
+            "findingIds": tfm.get("findingIds") or [],
+            "driverNodeIds": tfm.get("driverNodeIds") or [],
+            "createdAt": tfm.get("createdAt"),
+            "body": tbody,
+        }
+        for tid, tfm, tbody in _company_thoughts(args.id)
+        if previous_as_of is None or (tfm.get("createdAt") or "") > previous_as_of
+    ]
+    finding_ids = {fid for t in thoughts for fid in t["findingIds"]}
+
+    print(
+        json.dumps(
+            {
+                "previousSnapshot": previous_snapshot,
+                "thoughts": thoughts,
+                "findings": _findings_for(finding_ids),
+            },
+            ensure_ascii=False,
+        )
+    )
+
+
+def cmd_update_snapshot(args: argparse.Namespace) -> None:
+    errors = []
+    if not args.summary.strip():
+        errors.append("summary must not be empty")
+    if not _DATE_RE.match(args.as_of):
+        errors.append("asOf must be a date in YYYY-MM-DD format")
+    if errors:
+        fail(errors)
+
+    try:
+        fm, body = vault.read_entity("companies", args.id)
+    except FileNotFoundError:
+        fail([f"Company not found: {args.id}"])
+        return
+
+    now = vault.now_iso()
+    fm["currentSnapshot"] = {"asOf": args.as_of, "summary": args.summary}
+    fm["updatedAt"] = now
+    vault.write_entity("companies", args.id, fm, body=body)
+
+    matches = idx.find_by("companies", id=args.id)
+    if matches:
+        record = matches[0]
+        record["updatedAt"] = now
+        idx.upsert("companies", record)
+
+    print(json.dumps(fm, ensure_ascii=False))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Company CRUD")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -124,6 +255,20 @@ def main() -> None:
     p_list = sub.add_parser("list")
     p_list.add_argument("--sector-id")
     p_list.set_defaults(func=cmd_list)
+
+    p_view = sub.add_parser("view")
+    p_view.add_argument("--id", required=True)
+    p_view.set_defaults(func=cmd_view)
+
+    p_snapshot_context = sub.add_parser("snapshot-context")
+    p_snapshot_context.add_argument("--id", required=True)
+    p_snapshot_context.set_defaults(func=cmd_snapshot_context)
+
+    p_update_snapshot = sub.add_parser("update-snapshot")
+    p_update_snapshot.add_argument("--id", required=True)
+    p_update_snapshot.add_argument("--as-of", required=True)
+    p_update_snapshot.add_argument("--summary", required=True)
+    p_update_snapshot.set_defaults(func=cmd_update_snapshot)
 
     args = parser.parse_args()
     args.func(args)
