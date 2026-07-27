@@ -14,13 +14,10 @@ from __future__ import annotations
 import argparse
 import copy
 import json
-import re
 import sys
 
 import index as idx
 import vault
-
-_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def fail(errors: list[str]) -> None:
@@ -70,33 +67,42 @@ def cmd_register(args: argparse.Namespace) -> None:
         "updatedAt": now,
     }
     vault.write_entity("companies", args.id, frontmatter, body=args.body or "")
-    idx.upsert(
-        "companies",
-        {
-            "id": frontmatter["id"],
-            "ticker": frontmatter["ticker"],
-            "market": frontmatter["market"],
-            "name": frontmatter["name"],
-            "sectorIds": frontmatter["sectorIds"],
-            "primarySectorId": frontmatter["primarySectorId"],
-            "fiscalYearEnd": frontmatter["fiscalYearEnd"],
-            "createdAt": frontmatter["createdAt"],
-            "updatedAt": frontmatter["updatedAt"],
-        },
-    )
+    idx.upsert("companies", _company_index_row(frontmatter))
     _sync_sector_company_count(sector_ids)
     print(json.dumps(frontmatter, ensure_ascii=False))
 
 
+def _company_index_row(fm: dict) -> dict:
+    return {k: fm[k] for k in idx.TABLE_SCHEMAS["companies"].names}
+
+
 def _sync_sector_company_count(sector_ids: list[str]) -> None:
-    """Keep sectors.companyCount consistent after adding a Company."""
+    """Keep sectors.companyCount consistent after adding a Company.
+
+    Recomputes the count from the Vault directly (rather than patching a
+    possibly-absent or stale index row) so this stays correct even if the
+    index was deleted/rebuilt out of band.
+    """
     for sector_id in set(sector_ids):
-        matches = idx.find_by("sectors", id=sector_id)
-        if not matches:
+        try:
+            sector_fm, _ = vault.read_entity("sectors", sector_id)
+        except FileNotFoundError:
             continue
-        record = matches[0]
-        record["companyCount"] = record["companyCount"] + 1
-        idx.upsert("sectors", record)
+        count = sum(
+            1
+            for _, cfm, _ in vault.list_entities("companies")
+            if sector_id in (cfm.get("sectorIds") or [])
+        )
+        idx.upsert(
+            "sectors",
+            {
+                "id": sector_fm["id"],
+                "name": sector_fm["name"],
+                "driverTreeTemplateCount": len(sector_fm.get("driverTreeTemplate") or []),
+                "companyCount": count,
+                "createdAt": sector_fm["createdAt"],
+            },
+        )
 
 
 def cmd_list(args: argparse.Namespace) -> None:
@@ -217,7 +223,7 @@ def cmd_update_snapshot(args: argparse.Namespace) -> None:
     errors = []
     if not args.summary.strip():
         errors.append("summary must not be empty")
-    if not _DATE_RE.match(args.as_of):
+    if not vault.is_valid_date(args.as_of):
         errors.append("asOf must be a date in YYYY-MM-DD format")
     if errors:
         fail(errors)
@@ -228,16 +234,10 @@ def cmd_update_snapshot(args: argparse.Namespace) -> None:
         fail([f"Company not found: {args.id}"])
         return
 
-    now = vault.now_iso()
     fm["currentSnapshot"] = {"asOf": args.as_of, "summary": args.summary}
-    fm["updatedAt"] = now
+    fm["updatedAt"] = vault.now_iso()
     vault.write_entity("companies", args.id, fm, body=body)
-
-    matches = idx.find_by("companies", id=args.id)
-    if matches:
-        record = matches[0]
-        record["updatedAt"] = now
-        idx.upsert("companies", record)
+    idx.upsert("companies", _company_index_row(fm))
 
     print(json.dumps(fm, ensure_ascii=False))
 

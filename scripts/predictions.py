@@ -48,6 +48,8 @@ def cmd_add(args: argparse.Namespace) -> None:
         errors.append("observableText must not be empty")
     if not (0 <= args.probability <= 1):
         errors.append("probability must be between 0 and 1")
+    if not vault.is_valid_date(args.horizon):
+        errors.append("horizon must be a date in YYYY-MM-DD format")
     observable_parts = [args.signal_metric, args.comparator, args.threshold]
     if any(p is not None for p in observable_parts) and not all(p is not None for p in observable_parts):
         errors.append("signal-metric/comparator/threshold must all be given together for observableRef")
@@ -153,7 +155,11 @@ def cmd_resolution_context(args: argparse.Namespace) -> None:
         fail([f"Prediction not found: {args.id}"])
         return
 
-    thesis_fm, _ = vault.read_entity("theses", fm["thesisId"])
+    try:
+        thesis_fm, _ = vault.read_entity("theses", fm["thesisId"])
+    except FileNotFoundError:
+        fail([f"Thesis not found: {fm['thesisId']}"])
+        return
     company_id = thesis_fm.get("companyId")
 
     candidates = []
@@ -200,14 +206,7 @@ def cmd_resolve(args: argparse.Namespace) -> None:
     fm["outcome"] = args.outcome
     fm["postmortem"] = args.postmortem or None
     vault.write_entity("predictions", args.id, fm, body=body)
-
-    matches = idx.find_by("predictions", id=args.id)
-    if matches:
-        record = matches[0]
-        record["resolvedAt"] = fm["resolvedAt"]
-        record["outcome"] = fm["outcome"]
-        record["postmortem"] = fm["postmortem"]
-        idx.upsert("predictions", record)
+    idx.upsert("predictions", _index_row(fm))
 
     print(json.dumps(fm, ensure_ascii=False))
 

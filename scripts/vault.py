@@ -15,10 +15,16 @@ import yaml
 VAULT_ROOT = Path(__file__).resolve().parent.parent / "data" / "vault"
 
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?(.*)$", re.DOTALL)
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def is_valid_date(value: str) -> bool:
+    """Whether ``value`` is a YYYY-MM-DD date string (e.g. horizon, asOf fields)."""
+    return bool(_DATE_RE.match(value))
 
 
 def entity_dir(entity_type: str) -> Path:

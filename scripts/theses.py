@@ -60,6 +60,8 @@ def cmd_register(args: argparse.Namespace) -> None:
         errors.append("thoughtIds must not contain duplicates")
     if args.probability is not None and not (0 <= args.probability <= 1):
         errors.append("probability must be between 0 and 1")
+    if args.horizon and not vault.is_valid_date(args.horizon):
+        errors.append("horizon must be a date in YYYY-MM-DD format")
     if errors:
         fail(errors)
 
@@ -215,13 +217,7 @@ def cmd_update_status(args: argparse.Namespace) -> None:
     fm["status"] = args.status
     fm["updatedAt"] = now
     vault.write_entity("theses", args.id, fm, body=new_body)
-
-    matches = idx.find_by("theses", id=args.id)
-    if matches:
-        record = matches[0]
-        record["status"] = args.status
-        record["updatedAt"] = now
-        idx.upsert("theses", record)
+    idx.upsert("theses", {k: fm[k] for k in idx.TABLE_SCHEMAS["theses"].names})
 
     print(json.dumps(fm, ensure_ascii=False))
 
