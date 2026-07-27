@@ -19,8 +19,7 @@ Spec: `domain/usecase/investor/register_source/usecase.md`, `domain/usecase/inve
 1. 投資家に以下を確認する:
    - `type`: `rss_feed` / `web_page` / `youtube_channel` / `disclosure_feed` / `market_data_api` / `newsletter`
    - `layer`: `company` / `sector` / `theme` / `macro` / `market`
-   - `layer` に応じた参照先（`layer` が `company`/`market` なら `companyId`、`sector` なら `sectorId`）。id が分からなければ `list-companies` / `list-sectors` skill で引く。
-   - `layer=theme` の場合: Theme エンティティは未実装（Phase 4）のため、現時点ではこの layer での登録は推奨しない旨を伝え、`macro` など他の layer での代替を検討してもらう。
+   - `layer` に応じた参照先（`layer` が `company`/`market` なら `companyId`、`sector` なら `sectorId`、`theme` なら `themeId`）。id が分からなければ `list-companies` / `list-sectors` / `list-themes` skill で引く。
    - `name`（表示名）、`url`、任意で `description`
 2. UUID を生成する: `uuidgen`
 3. 以下を実行する:

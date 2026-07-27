@@ -62,7 +62,12 @@ def cmd_add(args: argparse.Namespace) -> None:
         except FileNotFoundError:
             fail([f"Sector not found: {sid}"])
             return
-    # Theme not implemented yet (Phase 4) — themeIds are accepted as opaque references.
+    for theme_id in theme_ids:
+        try:
+            vault.read_entity("themes", theme_id)
+        except FileNotFoundError:
+            fail([f"Theme not found: {theme_id}"])
+            return
 
     if driver_node_ids:
         known_node_ids: set[str] = set()

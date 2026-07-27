@@ -80,6 +80,98 @@ TABLE_SCHEMAS: dict[str, pa.Schema] = {
             ("tags", pa.list_(pa.string())),
         ]
     ),
+    "theses": pa.schema(
+        [
+            ("id", pa.string()),
+            ("companyId", pa.string()),
+            ("statement", pa.string()),
+            ("consensusView", pa.string()),
+            ("variant", pa.string()),
+            ("whyMispriced", pa.string()),
+            ("invalidation", pa.string()),
+            ("confirmation", pa.string()),
+            ("horizon", pa.string()),
+            ("probability", pa.float64()),
+            ("status", pa.string()),
+            ("thoughtIds", pa.list_(pa.string())),
+            ("createdAt", pa.string()),
+            ("updatedAt", pa.string()),
+            ("tags", pa.list_(pa.string())),
+        ]
+    ),
+    "signals": pa.schema(
+        [
+            ("id", pa.string()),
+            ("companyId", pa.string()),
+            ("category", pa.string()),
+            ("metric", pa.string()),
+            ("period", pa.string()),
+            ("value", pa.float64()),
+            ("unit", pa.string()),
+            ("sourceFindingId", pa.string()),
+            ("extractionMethod", pa.string()),
+            ("validatesThesisId", pa.string()),
+            ("validatesAssumption", pa.string()),
+            ("createdAt", pa.string()),
+        ]
+    ),
+    "themes": pa.schema(
+        [
+            ("id", pa.string()),
+            ("name", pa.string()),
+            ("description", pa.string()),
+            ("sectorIds", pa.list_(pa.string())),
+            ("createdAt", pa.string()),
+        ]
+    ),
+    "strategy_recommendations": pa.schema(
+        [
+            ("id", pa.string()),
+            ("companyId", pa.string()),
+            ("relatedThesisIds", pa.list_(pa.string())),
+            ("option", pa.string()),
+            ("executionEvidence", pa.string()),
+            ("executionProbability", pa.string()),
+            ("impactIfExecuted", pa.string()),
+            ("pricedIn", pa.string()),
+            ("createdAt", pa.string()),
+            ("updatedAt", pa.string()),
+        ]
+    ),
+    "investment_actions": pa.schema(
+        [
+            ("id", pa.string()),
+            ("companyId", pa.string()),
+            ("relatedThesisIds", pa.list_(pa.string())),
+            ("relatedStrategyRecommendationIds", pa.list_(pa.string())),
+            ("action", pa.string()),
+            ("positionSizingRationale", pa.string()),
+            ("positionSizePercent", pa.float64()),
+            ("nextResearch", pa.string()),
+            ("bearCase", pa.string()),
+            ("createdAt", pa.string()),
+            ("updatedAt", pa.string()),
+        ]
+    ),
+    "predictions": pa.schema(
+        [
+            ("id", pa.string()),
+            ("thesisId", pa.string()),
+            ("sourceThoughtId", pa.string()),
+            ("statement", pa.string()),
+            ("horizon", pa.string()),
+            ("probability", pa.float64()),
+            ("observableText", pa.string()),
+            ("observableSignalMetric", pa.string()),
+            ("observableComparator", pa.string()),
+            ("observableThreshold", pa.float64()),
+            ("observableUnit", pa.string()),
+            ("resolvedAt", pa.string()),
+            ("outcome", pa.string()),
+            ("postmortem", pa.string()),
+            ("createdAt", pa.string()),
+        ]
+    ),
 }
 
 
