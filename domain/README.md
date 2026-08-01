@@ -2,7 +2,7 @@
 
 ## 概要
 
-投資先候補企業について市場動向・事業内容を継続的かつ構造的に把握し、未来予測（この企業はこれからどうなるか）と事業戦略の評価（経営はどんな手を打つべきか／打っているか）の精度を高めるための意思決定支援システムのドメインモデル。
+対象企業の事業構造・意思決定構造を継続的かつ構造的に理解する（「経営ならこの状況をどう判断するか」を再現できる解像度まで掘り下げる）ことを主目的とするドメインモデル。投資判断の精度向上（未来予測・市場との比較）は、この理解が十分に深まった結果として得られる副産物として位置づける。投資家自身が唯一の使い手であり続ける前提は変えないが、「投資家としてどう賭けるか」を先に問うのではなく、「企業・事業の実態はどうで、経営ならどう動くか」を先に問う順序にドメインモデルを合わせる（2026-08-01決定）。
 
 段階的な構築計画（Phase 0〜6）は別途定義する。本ドキュメントはその計画で確定した設計を、各Phaseで作られるエンティティも含めて先に定義したものである。
 
@@ -16,13 +16,17 @@ Source（継続監視）→ Finding（事実）→ Thought（解釈）→ Thesis
 
 ```
 Sector / Theme（分類の器）
-Company（投資判断の中心単位。ドライバーツリーと現在地スナップショットを持つ）
-Thesis（consensusView / variant / whyMispriced / invalidation / confirmation を必須で持つ投資仮説）
+Company（意思決定理解の中心単位。ドライバーツリーと現在地スナップショットを持つ）
+Thesis（事業理解の仮説として育ち、statusがestablishedに進む段階で初めて市場比較 consensusView / variant / whyMispriced を要求する。invalidation / confirmationは常に必須）
   ├─ Signal（時系列指標。Thesisの前提に紐づく）
   ├─ Prediction（時間軸・確度つきの個別予測。答え合わせループ）
-  ├─ StrategyRecommendation（経営の打ち手の評価テーブル）
-  └─ InvestmentAction（投資家自身の打ち手。終端レイヤー）
+  ├─ StrategyRecommendation（経営の打ち手の評価テーブル。実行確率・インパクトを先に埋め、市場の織り込み度pricedInは投資判断に使う段になって埋める）
+  └─ InvestmentAction（投資家自身の打ち手。Company理解が十分深まった結果として最後に一段足す終端レイヤー）
 ```
+
+### 目的と副産物の関係（2026-08-01決定）
+
+Thesis・StrategyRecommendationはいずれも「事業・経営の実態理解」と「投資家としての判断材料」の2段階で構成する。前者（`invalidation`/`confirmation`、`option`/`executionEvidence`/`executionProbability`/`impactIfExecuted`など）は投資という文脈を離れても成立する経営理解そのものであり、常に必須にする。後者（`consensusView`/`variant`/`whyMispriced`、`pricedIn`）は市場との比較という投資家固有の問いであり、前者が十分育った後（Thesisなら`status=established`に進む時点、StrategyRecommendationならInvestmentActionの判断材料に使う時点）で初めて必須にする。詳細は各エンティティ定義（[thesis.md](data/thesis.md)、[strategy_recommendation.md](data/strategy_recommendation.md)）を参照。
 
 ## エンティティ一覧
 
