@@ -1,13 +1,13 @@
 ---
 name: generate-strategy-recommendation
-description: Evaluate the management strategy options available to a Company — execution probability, expected impact, and how priced-in each is — as an input to the investor's own InvestmentAction. Use when the investor wants a structured read on what management might do next, not a "you should do X" recommendation.
+description: Evaluate the management strategy options available to a Company — execution probability and expected impact — as an input to the investor's own InvestmentAction. Use when the investor wants a structured read on what management might do next, not a "you should do X" recommendation.
 ---
 
 # 経営の打ち手を評価する (Generate Strategy Recommendation)
 
 Spec: `domain/usecase/investor/generate_strategy_recommendation/usecase.md`, `domain/usecase/investor/generate_strategy_recommendation/tech_context.md`
 
-宛先は経営者ではなく投資家自身であることを常に意識する。出力は「A社はこうすべき」という規範的な提案文にせず、**打ち手の選択肢 × 実行確率 × 業績インパクト × 市場の織り込み度** の評価テーブルという形式を崩さない。
+宛先は経営者ではなく投資家自身であることを常に意識する。出力は「A社はこうすべき」という規範的な提案文にせず、**打ち手の選択肢 × 実行確率 × 業績インパクト** の評価テーブルという形式を崩さない。市場の織り込み度は扱わない（投資家固有の判断材料であり経営の打ち手評価そのものには不要なため。織り込みを踏まえた判断は関連する `Thesis` の `consensusView`/`variant`/`whyMispriced` を見る）。
 
 ## 事前条件
 
@@ -16,12 +16,11 @@ Spec: `domain/usecase/investor/generate_strategy_recommendation/usecase.md`, `do
 ## 手順
 
 1. 対象 `Company` の id を確認する（分からなければ `list-companies` skill）。
-2. 対象 Company の `Thesis` 群（`view-thesis`/`list-theses`）、`Signal`（`view-signals`。`market` カテゴリは織り込み度判定に重要）、および Sector/Theme レイヤーの Finding/Thought（`view-company`、`list-themes`）を収集し読み込む。
+2. 対象 Company の `Thesis` 群（`view-thesis`/`list-theses`）、`Signal`（`view-signals`）、および Sector/Theme レイヤーの Finding/Thought（`view-company`、`list-themes`）を収集し読み込む。
 3. 収集した情報をもとに、経営が取りうる打ち手の選択肢（`option`）を複数洗い出す。洗い出せる選択肢が0件なら「現時点で評価に足る材料が揃っていません」と伝え、追加で必要な Finding/Thought の種類を提示して終了する。
 4. 選択肢ごとに以下を評価する:
    - `executionEvidence`/`executionProbability`（実行確率とその根拠。過去の資本配分実績・経営陣のインセンティブ設計・実行ケイパビリティ等から）
    - `impactIfExecuted`（実行された場合の業績インパクト）
-   - `pricedIn`（市場がこれをどの程度織り込み済みか。`market` カテゴリの Signal を参照。判定に足る Signal がなければ `partially_priced` を暫定値とし、`register-source`（`layer=market`）での市場データ継続取得を促す）
    - 根拠にした `Thesis`（`relatedThesisIds`）
 5. UUID を生成する: `uuidgen`（選択肢ごとに1つ）
 6. 選択肢ごとに以下を実行する（1回の評価リクエストにつき選択肢の数だけ実行する）:
@@ -29,7 +28,6 @@ Spec: `domain/usecase/investor/generate_strategy_recommendation/usecase.md`, `do
    uv run python scripts/strategy_recommendations.py add --id <uuid生成結果> --company-id "<companyId>" \
      --option "<option>" --execution-evidence "<executionEvidence>" \
      --execution-probability "<low|medium|high>" --impact-if-executed "<impactIfExecuted>" \
-     --priced-in "<not_priced|partially_priced|fully_priced>" \
      [--related-thesis-ids "<id1>,<id2>"] [--body "<詳しい論証>"]
    ```
 7. コマンドが非ゼロで終了した場合、stderr の `{"errors": [...]}` を伝える。よくある失敗:

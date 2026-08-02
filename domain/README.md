@@ -20,13 +20,17 @@ Company（意思決定理解の中心単位。ドライバーツリーと現在�
 Thesis（事業理解の仮説として育ち、statusがestablishedに進む段階で初めて市場比較 consensusView / variant / whyMispriced を要求する。invalidation / confirmationは常に必須）
   ├─ Signal（時系列指標。Thesisの前提に紐づく）
   ├─ Prediction（時間軸・確度つきの個別予測。答え合わせループ）
-  ├─ StrategyRecommendation（経営の打ち手の評価テーブル。実行確率・インパクトを先に埋め、市場の織り込み度pricedInは投資判断に使う段になって埋める）
+  ├─ StrategyRecommendation（経営の打ち手の評価テーブル。実行確率・インパクトのみを持ち、市場の織り込み度は持たない）
   └─ InvestmentAction（投資家自身の打ち手。Company理解が十分深まった結果として最後に一段足す終端レイヤー）
 ```
 
 ### 目的と副産物の関係（2026-08-01決定）
 
-Thesis・StrategyRecommendationはいずれも「事業・経営の実態理解」と「投資家としての判断材料」の2段階で構成する。前者（`invalidation`/`confirmation`、`option`/`executionEvidence`/`executionProbability`/`impactIfExecuted`など）は投資という文脈を離れても成立する経営理解そのものであり、常に必須にする。後者（`consensusView`/`variant`/`whyMispriced`、`pricedIn`）は市場との比較という投資家固有の問いであり、前者が十分育った後（Thesisなら`status=established`に進む時点、StrategyRecommendationならInvestmentActionの判断材料に使う時点）で初めて必須にする。詳細は各エンティティ定義（[thesis.md](data/thesis.md)、[strategy_recommendation.md](data/strategy_recommendation.md)）を参照。
+Thesisは「事業・経営の実態理解」と「投資家としての判断材料」の2段階で構成する。前者（`invalidation`/`confirmation`）は投資という文脈を離れても成立する経営理解そのものであり、常に必須にする。後者（`consensusView`/`variant`/`whyMispriced`）は市場との比較という投資家固有の問いであり、前者が十分育った後（`status=established`に進む時点）で初めて必須にする。
+
+StrategyRecommendationは経営の打ち手評価（`option`/`executionEvidence`/`executionProbability`/`impactIfExecuted`）のみを持ち、市場の織り込み度（旧`pricedIn`）は持たない。これも投資家固有の問いであり、経営の打ち手そのものの評価には不要なため（2026-08-02決定）。投資家が市場織り込みを踏まえた判断をする際は、関連する[Thesis](data/thesis.md)の`consensusView`/`variant`/`whyMispriced`を参照する。
+
+詳細は各エンティティ定義（[thesis.md](data/thesis.md)、[strategy_recommendation.md](data/strategy_recommendation.md)）を参照。
 
 ## エンティティ一覧
 

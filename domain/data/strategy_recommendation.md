@@ -2,11 +2,11 @@
 
 ## 概要
 
-Phase 4で導入。初版は「この企業が取るべき戦略」という経営コンサル的な出力だったが、これはユーザー（投資家）が実行できる打ち手ではなく、宛先がすり替わっていた。改訂後は、Thesis・Signal・業界/政策/社会動向のFindingを踏まえ、**「経営の打ち手の選択肢 × 実行確率 × 業績インパクト × 市場の織り込み度」の評価テーブル**を出力する中間生成物とする。「A社はこうすべき」という提案ではなく、「A社がこの打ち手を取る確率と、取った場合のインパクトと、それが未だ株価に織り込まれていない度合い」を評価する。
+Phase 4で導入。初版は「この企業が取るべき戦略」という経営コンサル的な出力だったが、これはユーザー（投資家）が実行できる打ち手ではなく、宛先がすり替わっていた。改訂後は、Thesis・Signal・業界/政策/社会動向のFindingを踏まえ、**「経営の打ち手の選択肢 × 実行確率 × 業績インパクト」の評価テーブル**を出力する中間生成物とする。「A社はこうすべき」という提案ではなく、「A社がこの打ち手を取る確率と、取った場合のインパクト」を評価する。
 
 最終的な投資家自身の打ち手は[InvestmentAction](investment_action.md)が担う。StrategyRecommendationはその入力となる中間生成物。
 
-**2026-08-01決定**: 主目的を「企業の意思決定支援」に置くリフレーム（[README](../README.md#目的と副産物の関係2026-08-01決定)参照）に伴い、`pricedIn`（市場の織り込み度）は作成時点では必須としない。`option`/`executionEvidence`/`executionProbability`/`impactIfExecuted`——つまり経営自身がこの打ち手をどう評価し、実行し得るか——を先に埋める。投資家自身がこの評価を[InvestmentAction](investment_action.md)の判断材料として採用する段になって初めて`pricedIn`を埋める。
+**2026-08-02決定**: `pricedIn`（市場の織り込み度）は廃止した。これは純粋に投資家自身の判断材料であり、経営の打ち手そのものの評価（実行確率・インパクト）には不要なため（主目的を「企業の意思決定支援」に置くリフレーム、[README](../README.md#目的と副産物の関係2026-08-01決定)参照）。市場の織り込みを踏まえた投資判断が必要な場合は、関連する[Thesis](thesis.md)の`consensusView`/`variant`/`whyMispriced`（`status=established`到達時に必須）を参照する。
 
 ---
 
@@ -21,7 +21,6 @@ Phase 4で導入。初版は「この企業が取るべき戦略」という経�
 | `executionEvidence` | string | ✅ | 実行確率の根拠（過去の資本配分実績・経営陣のインセンティブ設計・実行ケイパビリティ等） |
 | `executionProbability` | `ExecutionProbability` | ✅ | 実行確率（定性区分） |
 | `impactIfExecuted` | string | ✅ | 実行された場合の業績インパクト（例: "利益+X%"） |
-| `pricedIn` | `PricedInLevel` | △ | 市場がこれをどの程度織り込み済みか。作成時点では空でよいが、[InvestmentAction](investment_action.md)の判断材料に採用する時点までには必須（2026-08-01決定） |
 | `createdAt` | datetime | ✅ | 作成日時 |
 | `updatedAt` | datetime | ✅ | 最終更新日時 |
 
@@ -37,22 +36,13 @@ Phase 4で導入。初版は「この企業が取るべき戦略」という経�
 | `medium` | 実行確率は中程度 |
 | `high` | 実行確率は高い |
 
-### `PricedInLevel`
-
-| 値 | 説明 |
-|---|---|
-| `not_priced` | 市場はほぼ織り込んでいない |
-| `partially_priced` | 部分的に織り込まれている |
-| `fully_priced` | 十分に織り込まれている |
-
 ---
 
 ## 不変条件・ビジネスルール
 
 - `companyId` は必須
 - `option`/`executionEvidence`/`impactIfExecuted` は空文字列にできない
-- `pricedIn` は作成時点では空でよい。ただし[InvestmentAction](investment_action.md)の`relatedStrategyRecommendationIds`から参照される時点までには設定されていなければならない（投資判断の材料に使う以上、織り込み度の評価を欠いたまま採用しない。2026-08-01決定）
-- 「A社はこうすべき」という規範的な提案文にせず、選択肢・根拠・確率・インパクト・織り込み度の評価という形を崩さない
+- 「A社はこうすべき」という規範的な提案文にせず、選択肢・根拠・確率・インパクトの評価という形を崩さない
 
 ---
 
