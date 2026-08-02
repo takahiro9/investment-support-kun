@@ -14,8 +14,9 @@ Source（継続監視）→ Finding（事実）→ Thought（解釈）→ Thesis
 
 ```
 Sector / Theme（分類の器）
-Company（意思決定理解の中心単位。ドライバーツリーと現在地スナップショットを持つ）
-Thesis（事業理解の仮説。何が実態で、なぜそう言えるか、何が起きたら崩れる／確からしくなるか [invalidation / confirmation] を常に必須で持つ）
+Company（意思決定理解の中心単位。銘柄としてのマスタ情報と会社全体の現在地スナップショットを持つ）
+  └─ Business（個別事業単位。ドライバーツリーと事業ごとの現在地スナップショットを持つ）
+Thesis（事業理解の仮説。何が実態で、なぜそう言えるか、何が起きたら崩れる／確からしくなるか [invalidation / confirmation] を常に必須で持つ。Companyに必須で、任意でBusinessにも紐づく）
   ├─ Signal（時系列指標。Thesisの前提に紐づく）
   ├─ Prediction（時間軸・確度つきの個別予測。答え合わせループ）
   ├─ StrategyRecommendation（経営の打ち手の評価テーブル。実行確率・インパクトのみを持つ）
@@ -32,17 +33,20 @@ Thesis/StrategyRecommendationはいずれも「事業・経営の実態理解」
 
 | エンティティ | 役割 |
 |---|---|
-| [Sector](data/sector.md) | 業種。Companyのマスタ分類、ドライバーツリーのテンプレート単位 |
-| [Company](data/company.md) | 投資判断の中心単位。ドライバーツリーと現在地スナップショットを持つ |
+| [Sector](data/sector.md) | 業種。Company/Businessのマスタ分類、ドライバーツリーのテンプレート単位 |
+| [Company](data/company.md) | 意思決定理解の中心単位。銘柄としてのマスタ情報と会社全体の現在地スナップショットを持つ |
+| [Business](data/business.md) | Companyの内部に存在する個別事業単位。ドライバーツリーと事業ごとの現在地スナップショットを持つ |
 | [Source](data/source.md) | 情報源。企業/業界/マクロ/Themeの各層を監視する |
 | [Finding](data/finding.md) | 中立な事実のスナップショット。出所区分を持つ |
-| [Thought](data/thought.md) | Findingへの意味づけ。Company/Sector/Themeへの関連付けとドライバーツリーのノード紐付けを担う |
-| [Thesis](data/thesis.md) | 事業仮説。反証/確証条件を必須で持つ |
+| [Thought](data/thought.md) | Findingへの意味づけ。Company/Business/Sector/Themeへの関連付けとドライバーツリーのノード紐付けを担う |
+| [Thesis](data/thesis.md) | 事業仮説。反証/確証条件を必須で持つ。任意でBusiness単位にも紐づく |
 | [Signal](data/signal.md) | 時系列指標。Thesisの前提に紐づく |
 | [Theme](data/theme.md) | Sectorを跨ぐマクロ・業界動向の括り |
 | [StrategyRecommendation](data/strategy_recommendation.md) | 経営の打ち手の評価テーブル |
 | [InvestmentAction](data/investment_action.md) | 投資家自身の打ち手（終端レイヤー） |
 | [Prediction](data/prediction.md) | 時間軸・確度つきの個別予測。答え合わせループ |
+
+`scripts/`配下の実装・`.claude/skills/`・既存vaultデータは、本ドキュメントが定義するBusiness分割にまだ追従していない。追従には既存Companyの`driverTree`/`currentSnapshot`を`isPrimary=true`のBusinessへ移すマイグレーションが必要。
 
 ## 保存方針
 

@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Companyが直接持っていた`driverTree`/`currentSnapshot`をBusiness（事業）エンティティへ切り出し、Thesisに任意の`businessId`を追加
 - Thesisから`consensusView`/`variant`/`whyMispriced`を廃止し、Source/Signal/Findingのmarket区分（株価・バリュエーション・アナリストコンセンサス）を削除
 - StrategyRecommendationから`pricedIn`（市場の織り込み度）を廃止
 - ドメインの主目的を「投資判断支援」から「企業の意思決定構造の理解」へ再定義し、Thesis/StrategyRecommendationの必須項目を段階化
