@@ -19,4 +19,4 @@ Spec: `domain/usecase/investor/list_companies/usecase.md`
 
 ## 注意
 
-`currentSnapshot`（現在地スナップショット）はこのコマンドの出力には含まれない（インデックスの集計対象外）。個社の詳細は Phase 1 の範囲外である `view-company` skill（未実装）の対象。
+`currentSnapshot`（現在地スナップショット）はこのコマンドの出力には含まれない（インデックスの集計対象外）。個社の詳細は `view-company` skill の対象。

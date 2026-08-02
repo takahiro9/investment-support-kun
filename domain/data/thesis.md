@@ -12,9 +12,11 @@ Thoughtが**1つ以上のFindingに根ざした注釈**であるのに対し、T
 
 Thesisは時間とともに育つ。証拠（Thought）が積み重なるにつれ`status`が遷移し、`updatedAt`が更新される、認識論的ライフサイクルを持つ。
 
-Thesisの最大の特徴は、**市場の織り込み（コンセンサス比較）を必須で持つ**こと。企業の未来予測が正しくても、それが既に株価に織り込まれていればリターンはゼロ。投資で価値を生むのは「正しい予測」ではなく「コンセンサスとズレていて、かつ正しい予測」（variant perception）であるため、`consensusView`/`variant`/`whyMispriced`が埋まらないThesisはstatusを先に進められない。
+Thesisはまず**事業理解の仮説**として育つ。「何が実態で、なぜそう言えるか、何が起きたら崩れる／確からしくなるか」（`invalidation`/`confirmation`）は`seed`/`developing`段階から常に必須で、これは投資という文脈を離れても成立する経営理解そのものである。
 
-反証条件（`invalidation`）と確証条件（`confirmation`）は対で必須（反証条件のみだと判定基準が片側に偏り、statusを前進させる方向にしか働かなくなる）。2026-07-26時点の決定により、両方とも**自然言語の自由記述**として持つ（指標名・閾値・比較演算子への半構造化は将来の論点として保留）。
+その理解が十分に育ち`established`へ進める段になって初めて、**市場の織り込み（コンセンサス比較）**を追加で要求する。企業の未来予測が正しくても、それが既に株価に織り込まれていればリターンはゼロ。投資で価値を生むのは「正しい予測」ではなく「コンセンサスとズレていて、かつ正しい予測」（variant perception）であるため、`established`に進めるには`consensusView`/`variant`/`whyMispriced`が埋まっていなければならない。事業理解と投資判断を意図的に2段階へ分離することで、「経営ならどう考えるか」を先に固め、投資家としての判断はその上に最後に載せる、という主従関係を型で表現する。
+
+反証条件（`invalidation`）と確証条件（`confirmation`）は対で必須（反証条件のみだと判定基準が片側に偏り、statusを前進させる方向にしか働かなくなる）。両方とも**自然言語の自由記述**として持つ（指標名・閾値・比較演算子への半構造化は将来の論点として保留）。
 
 ---
 
@@ -25,9 +27,9 @@ Thesisの最大の特徴は、**市場の織り込み（コンセンサス比較
 | `id` | string (UUID) | ✅ | 一意識別子 |
 | `companyId` | string (FK) | ✅ | この仮説が対象とするCompany |
 | `statement` | string | ✅ | 仮説を一言で表した見出し（例: "この企業はこうなる"） |
-| `consensusView` | string | ✅ | 市場は今どう見ているか（コンセンサス予想、現在の織り込み） |
-| `variant` | string | ✅ | 自分の見立てはどこがどうズレているか（収益の源泉） |
-| `whyMispriced` | string | ✅ | なぜ市場がまだ気づいていない/織り込めていないと言えるか |
+| `consensusView` | string | △ | 市場は今どう見ているか（コンセンサス予想、現在の織り込み）。`status`を`established`に進めるまでに必須。`seed`/`developing`段階では空でよい |
+| `variant` | string | △ | 自分の見立てはどこがどうズレているか（収益の源泉）。`consensusView`と同じタイミングで必須化 |
+| `whyMispriced` | string | △ | なぜ市場がまだ気づいていない/織り込めていないと言えるか。`consensusView`と同じタイミングで必須化 |
 | `invalidation` | string | ✅ | 何が起きたら崩れるか（反証条件、自由記述） |
 | `confirmation` | string | ✅ | 何が起きたら確度が上がるか（確証条件、自由記述） |
 | `horizon` | date | ❌ | いつまでの時間軸を想定した仮説か（個別の予測時期はPredictionで扱うため、ここでは目安） |
@@ -39,7 +41,7 @@ Thesisの最大の特徴は、**市場の織り込み（コンセンサス比較
 | `updatedAt` | datetime | ✅ | 最終更新日時 |
 | `tags` | string[] | ❌ | 分類用の自由記述タグ |
 
-### 将来の拡張（Phase 5で追加）
+### 将来の拡張（未実装）
 
 - `scenarios: Scenario[]` — bull/base/bearのシナリオ（`case` / `trigger` / `probability` / `targetPrice`）をThesisに付与し、InvestmentActionのポジションサイジングと接続する
 
@@ -64,9 +66,10 @@ Thesisの最大の特徴は、**市場の織り込み（コンセンサス比較
 ## 不変条件・ビジネスルール
 
 - `companyId` は必須。1つのThesisは1つのCompanyに紐づく（多対1）。1つのCompanyは複数のThesisを持ってよい
-- `statement`/`consensusView`/`variant`/`whyMispriced`/`invalidation`/`confirmation`/`body` はいずれも空文字列にできない
-- `invalidation`/`confirmation` は自然言語の自由記述として持つ（半構造化はしない。2026-07-26決定）
-- `status` の遷移は人間が判断する（v1では自動遷移ロジックを持たない）。invalidation抵触時はまず`challenged`に置き、即座に`dropped`にはしない
+- `statement`/`invalidation`/`confirmation`/`body` はいずれも空文字列にできない（`status`によらず常に必須。事業理解の仮説として成立するための最低条件）
+- `consensusView`/`variant`/`whyMispriced` は `status` が `seed`/`developing` の間は空でよい。`established` に進める時点では空文字列にできない（事業理解と投資判断を2段階に分離するため）
+- `invalidation`/`confirmation` は自然言語の自由記述として持つ（半構造化はしない）
+- `status` の遷移は人間が判断する（v1では自動遷移ロジックを持たない）。invalidation抵触時はまず`challenged`に置き、即座に`dropped`にはしない。`established`への遷移時は`consensusView`/`variant`/`whyMispriced`が埋まっていることを人間が確認する
 - `thoughtIds` の要素に重複は持たない。1つのThoughtは複数のThesisに属してよい（多対多）
 - `probability` を指定する場合は0以上1以下
 

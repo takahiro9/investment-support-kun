@@ -2,7 +2,7 @@
 
 ## 目的・概要
 
-投資家が、対象 `Company` について生成済みの `StrategyRecommendation`（経営の打ち手の評価）一覧を確認する。実行確率・業績インパクト・市場の織り込み度を並べて見比べ、投資家自身の打ち手（[InvestmentAction](../create_investment_action/usecase.md)）を検討するための画面。
+投資家が、対象 `Company` について生成済みの `StrategyRecommendation`（経営の打ち手の評価）一覧を確認する。実行確率・業績インパクトを並べて見比べ、投資家自身の打ち手（[InvestmentAction](../create_investment_action/usecase.md)）を検討するための画面。
 
 ## 事前条件
 
@@ -16,7 +16,7 @@
 
 1. 投資家は、対象 `Company` の詳細画面等から「経営の打ち手の評価」一覧の表示をリクエストする。
 2. システムは、`companyId` が対象 Company を指す `StrategyRecommendation` をすべて取得する。
-3. システムは、`pricedIn`（市場の織り込み度）が低い順、あるいは `impactIfExecuted` が大きい順など、投資家の関心に沿った並び替えを可能にしつつ、選択肢ごとの評価テーブルを提示する。
+3. システムは、`impactIfExecuted` が大きい順など、投資家の関心に沿った並び替えを可能にしつつ、選択肢ごとの評価テーブルを提示する。市場の織り込みを踏まえた判断が必要な場合は、`relatedThesisIds` が指す `Thesis` の `consensusView`/`variant`/`whyMispriced` を合わせて参照するよう案内する。
 
 ## 代替フロー・例外フロー
 

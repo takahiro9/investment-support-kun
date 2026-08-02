@@ -133,7 +133,6 @@ TABLE_SCHEMAS: dict[str, pa.Schema] = {
             ("executionEvidence", pa.string()),
             ("executionProbability", pa.string()),
             ("impactIfExecuted", pa.string()),
-            ("pricedIn", pa.string()),
             ("createdAt", pa.string()),
             ("updatedAt", pa.string()),
         ]

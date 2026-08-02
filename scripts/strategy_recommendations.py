@@ -2,7 +2,7 @@
 
   uv run python scripts/strategy_recommendations.py add --id <uuid> --company-id <uuid> \\
       --option "サブスク転換" --execution-evidence "..." --execution-probability high \\
-      --impact-if-executed "..." --priced-in partially_priced \\
+      --impact-if-executed "..." \\
       [--related-thesis-ids <id1>,<id2>] [--body "評価の詳しい論証"]
   uv run python scripts/strategy_recommendations.py list --company-id <uuid>
 
@@ -18,7 +18,6 @@ import index as idx
 import vault
 
 EXECUTION_PROBABILITIES = ["low", "medium", "high"]
-PRICED_IN_LEVELS = ["not_priced", "partially_priced", "fully_priced"]
 
 
 def fail(errors: list[str]) -> None:
@@ -70,7 +69,6 @@ def cmd_add(args: argparse.Namespace) -> None:
         "executionEvidence": args.execution_evidence,
         "executionProbability": args.execution_probability,
         "impactIfExecuted": args.impact_if_executed,
-        "pricedIn": args.priced_in,
         "createdAt": now,
         "updatedAt": now,
     }
@@ -99,7 +97,6 @@ def main() -> None:
     p_add.add_argument("--execution-evidence", required=True)
     p_add.add_argument("--execution-probability", required=True, choices=EXECUTION_PROBABILITIES)
     p_add.add_argument("--impact-if-executed", required=True)
-    p_add.add_argument("--priced-in", required=True, choices=PRICED_IN_LEVELS)
     p_add.add_argument("--related-thesis-ids")
     p_add.add_argument("--body")
     p_add.set_defaults(func=cmd_add)
