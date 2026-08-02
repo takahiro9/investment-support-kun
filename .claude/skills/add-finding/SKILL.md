@@ -1,6 +1,6 @@
 ---
 name: add-finding
-description: Add a Finding (手動で発見した情報アイテム) to the investment vault as a neutral fact snapshot — an article, PDF, disclosure, memo, or market-data point. Use when the investor found something worth saving, then always follow up with a Thought.
+description: Add a Finding (手動で発見した情報アイテム) to the investment vault as a neutral fact snapshot — an article, PDF, disclosure, or memo. Use when the investor found something worth saving, then always follow up with a Thought.
 ---
 
 # Finding を手動で追加する (Add Finding Manually)
@@ -9,11 +9,11 @@ Spec: `domain/usecase/investor/add_finding_manually/usecase.md`, `domain/usecase
 
 ## Source か Finding かの判定（最初に必ず行う）
 
-登録対象の URL を時間をおいて再取得したとき、「新着項目の一覧」が返ってくる可能性がある場合（適時開示フィード、市場データAPIなど）は Finding ではなく `register-source` skill を案内する（`domain/data/source.md#source-か-finding-かの判定`）。単発・静的なコンテンツ（1本の記事・PDF・メモ・1時点の株価スナップショット等）のみこのスキルで扱う。
+登録対象の URL を時間をおいて再取得したとき、「新着項目の一覧」が返ってくる可能性がある場合（適時開示フィードなど）は Finding ではなく `register-source` skill を案内する（`domain/data/source.md#source-か-finding-かの判定`）。単発・静的なコンテンツ（1本の記事・PDF・メモ等）のみこのスキルで扱う。
 
 ## 手順
 
-1. `type` を確認する: `web_article` / `memo` / `pdf` / `youtube` / `image` / `disclosure` / `market_data` / `link`
+1. `type` を確認する: `web_article` / `memo` / `pdf` / `youtube` / `image` / `disclosure` / `link`
 2. `type` に応じて内容を確認する:
    - `web_article` / `youtube` / `disclosure` / `link` → `url` が必須
    - `memo` → 本文（`body`）が必須

@@ -3,7 +3,7 @@ name: update-thesis-status
 description: Transition a Thesis's lifecycle status (seed -> developing -> established, or -> challenged -> dropped) as evidence accumulates or invalidation conditions are hit. Use when the investor wants to advance, flag, or retire a hypothesis.
 ---
 
-# 投資仮説のステータスを遷移させる (Update Thesis Status)
+# 事業仮説のステータスを遷移させる (Update Thesis Status)
 
 Spec: `domain/usecase/investor/update_thesis_status/usecase.md`, `domain/usecase/investor/update_thesis_status/tech_context.md`
 
@@ -12,7 +12,6 @@ Spec: `domain/usecase/investor/update_thesis_status/usecase.md`, `domain/usecase
 1. 対象 Thesis の id を確認する（分からなければ `list-theses`/`view-thesis` skill）。
 2. 現在の `status` を確認し、遷移先を投資家に選んでもらう: `seed` / `developing` / `established` / `challenged` / `dropped`
    - `invalidation` 条件に抵触する事実が判明した場合は、まず `challenged` への遷移を勧める（`dropped` へは進めない）
-   - `established` への遷移を検討している場合、`consensusView`/`variant`/`whyMispriced` が実用的な粒度で書けているか（`view-thesis` で確認）を一言確認する
 3. 任意で遷移理由の本文追記（`note`）をもらう。
 4. 以下を実行する:
    ```

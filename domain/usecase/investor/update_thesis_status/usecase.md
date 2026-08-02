@@ -1,4 +1,4 @@
-# 投資仮説のステータスを遷移させる (Update Thesis Status)
+# 事業仮説のステータスを遷移させる (Update Thesis Status)
 
 ## 目的・概要
 
@@ -25,9 +25,7 @@
 
 - **3a. `invalidation` 条件に抵触する事実が新たに判明した場合:**
   投資家はまず `status` を `challenged` に遷移させる。この時点では `dropped` へは進めず、一時的なノイズか本質的な崩れかを見極めたうえで、改めて `dropped` または元の `status` への復帰を判断する（[Thesis の不変条件](../../../data/thesis.md#不変条件ビジネスルール)）。
-- **3b. `established` への遷移を試みるが `consensusView`/`variant`/`whyMispriced` が実用的な粒度で書けていない場合:**
-  システムは遷移前にこれらのフィールドの見直しを促す（Thesis作成時点で必須項目として埋まっているため、通常は内容の粒度が論点になる）。
-- **3c. `dropped` への遷移の場合:**
+- **3b. `dropped` への遷移の場合:**
   システムは確認を求める（以降この Thesis は一覧のデフォルト表示から外れるため）。
 
 ## 関連するドメインモデル

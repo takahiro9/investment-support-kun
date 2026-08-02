@@ -20,7 +20,7 @@ Spec: `domain/usecase/investor/view_company/usecase.md`
    - **現在地スナップショット** (`currentSnapshot`): `asOf` と `summary`。`null` の場合は「まだスナップショットが作成されていません」と伝え、`update-company-snapshot` skill を提案する
    - **ドライバーツリー** (`driverTree`): 各ノードの `filled` を見て、埋まっているノードと空白のノードを可視化する。空白ノードは「次に埋めるべき論点」として強調する。`driverTree` が空なら「ドライバーツリーが未整備です」と伝える
    - **紐づく Finding** (`findings`): 保存日時の新しい順。0件なら「まだ情報が紐づけられていません」と伝え、`add-finding` skill を提案する
-   - **Thesis** (`theses`): `statement`/`status`/`updatedAt`。0件なら「まだ投資仮説が立てられていません」と伝え、`create-thesis` skill を提案する
+   - **Thesis** (`theses`): `statement`/`status`/`updatedAt`。0件なら「まだ事業仮説が立てられていません」と伝え、`create-thesis` skill を提案する
 
 ## 注意
 

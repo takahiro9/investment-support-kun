@@ -16,7 +16,7 @@
 
 1. 投資家は、対象 `Company` の詳細画面等から「経営の打ち手の評価」一覧の表示をリクエストする。
 2. システムは、`companyId` が対象 Company を指す `StrategyRecommendation` をすべて取得する。
-3. システムは、`impactIfExecuted` が大きい順など、投資家の関心に沿った並び替えを可能にしつつ、選択肢ごとの評価テーブルを提示する。市場の織り込みを踏まえた判断が必要な場合は、`relatedThesisIds` が指す `Thesis` の `consensusView`/`variant`/`whyMispriced` を合わせて参照するよう案内する。
+3. システムは、`impactIfExecuted` が大きい順など、投資家の関心に沿った並び替えを可能にしつつ、選択肢ごとの評価テーブルを提示する。
 
 ## 代替フロー・例外フロー
 

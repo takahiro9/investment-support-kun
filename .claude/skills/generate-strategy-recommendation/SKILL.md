@@ -7,7 +7,7 @@ description: Evaluate the management strategy options available to a Company —
 
 Spec: `domain/usecase/investor/generate_strategy_recommendation/usecase.md`, `domain/usecase/investor/generate_strategy_recommendation/tech_context.md`
 
-宛先は経営者ではなく投資家自身であることを常に意識する。出力は「A社はこうすべき」という規範的な提案文にせず、**打ち手の選択肢 × 実行確率 × 業績インパクト** の評価テーブルという形式を崩さない。市場の織り込み度は扱わない（投資家固有の判断材料であり経営の打ち手評価そのものには不要なため。織り込みを踏まえた判断は関連する `Thesis` の `consensusView`/`variant`/`whyMispriced` を見る）。
+宛先は経営者ではなく投資家自身であることを常に意識する。出力は「A社はこうすべき」という規範的な提案文にせず、**打ち手の選択肢 × 実行確率 × 業績インパクト** の評価テーブルという形式を崩さない。市場の織り込み度は扱わない（経営の打ち手評価そのものには不要なため）。
 
 ## 事前条件
 

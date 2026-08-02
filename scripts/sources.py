@@ -18,8 +18,8 @@ from urllib.error import HTTPError, URLError
 import index as idx
 import vault
 
-TYPES = ["rss_feed", "web_page", "youtube_channel", "disclosure_feed", "market_data_api", "newsletter"]
-LAYERS = ["company", "sector", "theme", "macro", "market"]
+TYPES = ["rss_feed", "web_page", "youtube_channel", "disclosure_feed", "newsletter"]
+LAYERS = ["company", "sector", "theme", "macro"]
 
 # layer -> (frontmatter field, vault entity dir to check existence against, required)
 LAYER_REF = {
@@ -27,7 +27,6 @@ LAYER_REF = {
     "sector": ("sectorId", "sectors"),
     "theme": ("themeId", "themes"),
     "macro": (None, None),
-    "market": ("companyId", "companies"),
 }
 
 
@@ -77,7 +76,7 @@ def cmd_register(args: argparse.Namespace) -> None:
         errors.append("url must not be empty")
 
     ref_field, ref_entity = LAYER_REF[args.layer]
-    ref_value = {"company": args.company_id, "sector": args.sector_id, "market": args.company_id, "theme": args.theme_id}.get(args.layer)
+    ref_value = {"company": args.company_id, "sector": args.sector_id, "theme": args.theme_id}.get(args.layer)
     if ref_field and not ref_value:
         errors.append(f"layer '{args.layer}' requires {ref_field}")
     if errors:
@@ -105,7 +104,7 @@ def cmd_register(args: argparse.Namespace) -> None:
         "id": args.id,
         "type": args.type,
         "layer": args.layer,
-        "companyId": args.company_id if args.layer in ("company", "market") else None,
+        "companyId": args.company_id if args.layer == "company" else None,
         "sectorId": args.sector_id if args.layer == "sector" else None,
         "themeId": args.theme_id if args.layer == "theme" else None,
         "name": args.name,

@@ -14,7 +14,7 @@
 ```yaml
 ---
 id: <uuid>
-type: disclosure        # web_article | memo | pdf | youtube | image | disclosure | market_data | link
+type: disclosure        # web_article | memo | pdf | youtube | image | disclosure | link
 title: "2026年6月期 第1四半期決算短信"
 url: "https://..."       # web_article / youtube / disclosure / link の場合は必須
 sourceUrl: "https://..."

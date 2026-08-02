@@ -1,20 +1,18 @@
-# Thesis — 投資仮説
+# Thesis — 事業仮説
 
 ## 概要
 
-複数の[Thought](thought.md)（意味づけ）を束ね、一つの**投資仮説へ収斂させる統合層**。層構造の最上段に位置する。
+複数の[Thought](thought.md)（意味づけ）を束ね、一つの**事業理解の仮説へ収斂させる統合層**。層構造の最上段に位置する。
 
 ```
-Finding（事実）→ Thought（意味）→ Thesis（投資仮説への統合）
+Finding（事実）→ Thought（意味）→ Thesis（事業仮説への統合）
 ```
 
 Thoughtが**1つ以上のFindingに根ざした注釈**であるのに対し、Thesisは**複数のThoughtから成る**（多対多）。単一の出所を持たず、散らばった意味づけが収斂して立ち上がる主張がThesisである。証拠の単位をFindingではなくThoughtに取るのは、裸のFindingはスタンスを持たず、意味づけ（スタンス）はすべてThoughtが担うという原則に従うため。
 
 Thesisは時間とともに育つ。証拠（Thought）が積み重なるにつれ`status`が遷移し、`updatedAt`が更新される、認識論的ライフサイクルを持つ。
 
-Thesisはまず**事業理解の仮説**として育つ。「何が実態で、なぜそう言えるか、何が起きたら崩れる／確からしくなるか」（`invalidation`/`confirmation`）は`seed`/`developing`段階から常に必須で、これは投資という文脈を離れても成立する経営理解そのものである。
-
-その理解が十分に育ち`established`へ進める段になって初めて、**市場の織り込み（コンセンサス比較）**を追加で要求する。企業の未来予測が正しくても、それが既に株価に織り込まれていればリターンはゼロ。投資で価値を生むのは「正しい予測」ではなく「コンセンサスとズレていて、かつ正しい予測」（variant perception）であるため、`established`に進めるには`consensusView`/`variant`/`whyMispriced`が埋まっていなければならない。事業理解と投資判断を意図的に2段階へ分離することで、「経営ならどう考えるか」を先に固め、投資家としての判断はその上に最後に載せる、という主従関係を型で表現する。
+Thesisは**事業理解の仮説**である。「何が実態で、なぜそう言えるか、何が起きたら崩れる／確からしくなるか」（`invalidation`/`confirmation`）は常に必須で、これは投資という文脈を離れても成立する経営理解そのものである。
 
 反証条件（`invalidation`）と確証条件（`confirmation`）は対で必須（反証条件のみだと判定基準が片側に偏り、statusを前進させる方向にしか働かなくなる）。両方とも**自然言語の自由記述**として持つ（指標名・閾値・比較演算子への半構造化は将来の論点として保留）。
 
@@ -27,9 +25,6 @@ Thesisはまず**事業理解の仮説**として育つ。「何が実態で、�
 | `id` | string (UUID) | ✅ | 一意識別子 |
 | `companyId` | string (FK) | ✅ | この仮説が対象とするCompany |
 | `statement` | string | ✅ | 仮説を一言で表した見出し（例: "この企業はこうなる"） |
-| `consensusView` | string | △ | 市場は今どう見ているか（コンセンサス予想、現在の織り込み）。`status`を`established`に進めるまでに必須。`seed`/`developing`段階では空でよい |
-| `variant` | string | △ | 自分の見立てはどこがどうズレているか（収益の源泉）。`consensusView`と同じタイミングで必須化 |
-| `whyMispriced` | string | △ | なぜ市場がまだ気づいていない/織り込めていないと言えるか。`consensusView`と同じタイミングで必須化 |
 | `invalidation` | string | ✅ | 何が起きたら崩れるか（反証条件、自由記述） |
 | `confirmation` | string | ✅ | 何が起きたら確度が上がるか（確証条件、自由記述） |
 | `horizon` | date | ❌ | いつまでの時間軸を想定した仮説か（個別の予測時期はPredictionで扱うため、ここでは目安） |
@@ -57,7 +52,7 @@ Thesisはまず**事業理解の仮説**として育つ。「何が実態で、�
 |---|---|
 | `seed` | 萌芽。思いつき・問いの段階 |
 | `developing` | 育成中。Thoughtを束ねながら検証・肉付けしている最中 |
-| `established` | 確立。十分なThoughtに支持され、consensusView/variant/whyMispricedが実用的な粒度で書けている |
+| `established` | 確立。十分なThoughtに支持され、statement/invalidation/confirmationが実用的な粒度で書けている |
 | `challenged` | 要レビュー。invalidation条件に抵触した際にまずここへ置く。一時的なノイズか本質的な崩れかを人間が見極めてから`dropped`または復帰を判断する |
 | `dropped` | 棄却。反証された、あるいは追わないことにした |
 
@@ -67,9 +62,8 @@ Thesisはまず**事業理解の仮説**として育つ。「何が実態で、�
 
 - `companyId` は必須。1つのThesisは1つのCompanyに紐づく（多対1）。1つのCompanyは複数のThesisを持ってよい
 - `statement`/`invalidation`/`confirmation`/`body` はいずれも空文字列にできない（`status`によらず常に必須。事業理解の仮説として成立するための最低条件）
-- `consensusView`/`variant`/`whyMispriced` は `status` が `seed`/`developing` の間は空でよい。`established` に進める時点では空文字列にできない（事業理解と投資判断を2段階に分離するため）
 - `invalidation`/`confirmation` は自然言語の自由記述として持つ（半構造化はしない）
-- `status` の遷移は人間が判断する（v1では自動遷移ロジックを持たない）。invalidation抵触時はまず`challenged`に置き、即座に`dropped`にはしない。`established`への遷移時は`consensusView`/`variant`/`whyMispriced`が埋まっていることを人間が確認する
+- `status` の遷移は人間が判断する（v1では自動遷移ロジックを持たない）。invalidation抵触時はまず`challenged`に置き、即座に`dropped`にはしない
 - `thoughtIds` の要素に重複は持たない。1つのThoughtは複数のThesisに属してよい（多対多）
 - `probability` を指定する場合は0以上1以下
 

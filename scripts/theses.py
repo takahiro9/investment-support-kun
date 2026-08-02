@@ -1,8 +1,8 @@
 """CRUD for Thesis. Usage:
 
   uv run python scripts/theses.py register --id <uuid> --company-id <uuid> \\
-      --statement "..." --consensus-view "..." --variant "..." --why-mispriced "..." \\
-      --invalidation "..." --confirmation "..." --thought-ids <id1>,<id2> --body "論証本文" \\
+      --statement "..." --invalidation "..." --confirmation "..." \\
+      --thought-ids <id1>,<id2> --body "論証本文" \\
       [--horizon 2027-03-31] [--probability 0.6] [--tags tag1,tag2]
   uv run python scripts/theses.py list [--company-id <uuid>] [--status <status>]
   uv run python scripts/theses.py view --id <uuid>
@@ -37,9 +37,6 @@ def _split(value: str | None) -> list[str]:
 
 REQUIRED_TEXT_FIELDS = [
     ("statement", "statement"),
-    ("consensus_view", "consensusView"),
-    ("variant", "variant"),
-    ("why_mispriced", "whyMispriced"),
     ("invalidation", "invalidation"),
     ("confirmation", "confirmation"),
 ]
@@ -84,9 +81,6 @@ def cmd_register(args: argparse.Namespace) -> None:
         "id": args.id,
         "companyId": args.company_id,
         "statement": args.statement,
-        "consensusView": args.consensus_view,
-        "variant": args.variant,
-        "whyMispriced": args.why_mispriced,
         "invalidation": args.invalidation,
         "confirmation": args.confirmation,
         "horizon": args.horizon or None,
@@ -230,9 +224,6 @@ def main() -> None:
     p_register.add_argument("--id", required=True)
     p_register.add_argument("--company-id", required=True)
     p_register.add_argument("--statement", required=True)
-    p_register.add_argument("--consensus-view", required=True)
-    p_register.add_argument("--variant", required=True)
-    p_register.add_argument("--why-mispriced", required=True)
     p_register.add_argument("--invalidation", required=True)
     p_register.add_argument("--confirmation", required=True)
     p_register.add_argument("--thought-ids", required=True)

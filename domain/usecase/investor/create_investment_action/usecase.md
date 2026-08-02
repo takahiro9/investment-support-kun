@@ -2,7 +2,7 @@
 
 ## 目的・概要
 
-投資家が、「どのような打ち手が取れそうか」という問いに直接答える `InvestmentAction` を記録する。宛先は経営者ではなく投資家自身であり、`Thesis` / `StrategyRecommendation` / `market` カテゴリの `Signal` を横断して合成される、システムの最終出力（終端レイヤー）となる。
+投資家が、「どのような打ち手が取れそうか」という問いに直接答える `InvestmentAction` を記録する。宛先は経営者ではなく投資家自身であり、`Thesis` / `StrategyRecommendation` / `Signal` を横断して合成される、システムの最終出力（終端レイヤー）となる。
 
 確証バイアス対策として、Red Teamエージェント（反対側の論証を作る役割）による `bearCase` の作成とあわせて運用する。
 

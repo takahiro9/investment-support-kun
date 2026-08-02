@@ -6,7 +6,7 @@ Thesis・Signal・業界/政策/社会動向のFindingを踏まえ、**「経営
 
 最終的な投資家自身の打ち手は[InvestmentAction](investment_action.md)が担う。StrategyRecommendationはその入力となる中間生成物。
 
-市場の織り込み度（`pricedIn`）は持たない。これは純粋に投資家自身の判断材料であり、経営の打ち手そのものの評価（実行確率・インパクト）には不要なため。市場の織り込みを踏まえた投資判断が必要な場合は、関連する[Thesis](thesis.md)の`consensusView`/`variant`/`whyMispriced`（`status=established`到達時に必須）を参照する。
+市場の織り込み度は持たない。これは経営の打ち手そのものの評価（実行確率・インパクト）に不要な観点のため。
 
 ---
 

@@ -15,7 +15,7 @@ import sys
 import index as idx
 import vault
 
-CATEGORIES = ["financial", "operational", "leading", "market"]
+CATEGORIES = ["financial", "operational", "leading"]
 
 
 def fail(errors: list[str]) -> None:
