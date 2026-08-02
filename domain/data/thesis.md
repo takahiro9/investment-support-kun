@@ -16,6 +16,10 @@ Thesisの最大の特徴は、**市場の織り込み（コンセンサス比較
 
 反証条件（`invalidation`）と確証条件（`confirmation`）は対で必須（反証条件のみだと判定基準が片側に偏り、statusを前進させる方向にしか働かなくなる）。2026-07-26時点の決定により、両方とも**自然言語の自由記述**として持つ（指標名・閾値・比較演算子への半構造化は将来の論点として保留）。
 
+### Businessへの紐付け（任意）
+
+Thesisは必ず1つのCompanyに紐づくが、[Business](business.md)（個別事業単位）への紐付けは任意（`businessId`）とする。「このセグメントの利益率が改善する」のように特定事業に閉じた仮説はBusinessに紐づけ、「コングロマリット・ディスカウントが解消する」「資本政策の転換で全社的に再評価される」のように事業を横断する・事業に依存しない仮説は`businessId`を空のままCompany全体を対象とする。1つのCompanyが複数のThesisを持つのと同様、1つのBusinessも複数のThesisを持ってよい。
+
 ---
 
 ## 属性一覧
@@ -24,6 +28,7 @@ Thesisの最大の特徴は、**市場の織り込み（コンセンサス比較
 |---|---|---|---|
 | `id` | string (UUID) | ✅ | 一意識別子 |
 | `companyId` | string (FK) | ✅ | この仮説が対象とするCompany |
+| `businessId` | string (FK) | ❌ | この仮説が対象とする特定のBusiness（任意。指定しない場合はCompany全体を対象とする） |
 | `statement` | string | ✅ | 仮説を一言で表した見出し（例: "この企業はこうなる"） |
 | `consensusView` | string | ✅ | 市場は今どう見ているか（コンセンサス予想、現在の織り込み） |
 | `variant` | string | ✅ | 自分の見立てはどこがどうズレているか（収益の源泉） |
@@ -64,6 +69,7 @@ Thesisの最大の特徴は、**市場の織り込み（コンセンサス比較
 ## 不変条件・ビジネスルール
 
 - `companyId` は必須。1つのThesisは1つのCompanyに紐づく（多対1）。1つのCompanyは複数のThesisを持ってよい
+- `businessId` を指定する場合、`companyId` が指すCompany配下のBusinessのidであること
 - `statement`/`consensusView`/`variant`/`whyMispriced`/`invalidation`/`confirmation`/`body` はいずれも空文字列にできない
 - `invalidation`/`confirmation` は自然言語の自由記述として持つ（半構造化はしない。2026-07-26決定）
 - `status` の遷移は人間が判断する（v1では自動遷移ロジックを持たない）。invalidation抵触時はまず`challenged`に置き、即座に`dropped`にはしない
@@ -75,6 +81,7 @@ Thesisの最大の特徴は、**市場の織り込み（コンセンサス比較
 ## 他ドメインオブジェクトとの関係
 
 - **Company** — Thesisは必ずひとつのCompanyについての仮説（多対1）
+- **[Business](business.md)** — Thesisは任意でひとつのBusinessについての仮説にもなる（多対1、`businessId`）。指定がなければCompany全体を対象とする
 - **Thought** — Thesisは複数のThoughtから構成される（多対多）
 - **[Signal](signal.md)** — SignalはThesisの前提に`validatesThesisId`で紐づく（多対1）
 - **[Prediction](prediction.md)** — PredictionはThesisから派生する個別の予測（多対1、`Prediction.thesisId`）

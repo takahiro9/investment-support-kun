@@ -7,9 +7,9 @@ Companyが属する業種の軽量なマスタエンティティ。セクター�
 Sectorは主に2つの役割を持つ。
 
 - **Companyの分類軸**: 同一Sectorに属する複数のCompanyを相対比較できるようにする（パイロットは「同一セクター内3〜5社」を単位とする）
-- **ドライバーツリーのテンプレート単位**: 業種ごとに事業構造の分解（売上・利益・競争ポジションの分解軸）は異なるため、Sector単位でテンプレートを持ち、Companyはこれをコピーして個別化する
+- **ドライバーツリーのテンプレート単位**: 業種ごとに事業構造の分解（売上・利益・競争ポジションの分解軸）は異なるため、Sector単位でテンプレートを持ち、[Business](business.md)はこれをコピーして個別化する
 
-新しいセクターへの拡張は「Sectorを1件追加し、ドライバーツリーテンプレートを用意し、Companyを紐づける」という定型作業として繰り返せる設計にする。
+新しいセクターへの拡張は「Sectorを1件追加し、ドライバーツリーテンプレートを用意し、Business/Companyを紐づける」という定型作業として繰り返せる設計にする。
 
 ---
 
@@ -19,10 +19,10 @@ Sectorは主に2つの役割を持つ。
 |---|---|---|---|
 | `id` | string (UUID) | ✅ | 一意識別子 |
 | `name` | string | ✅ | セクター名（例: "半導体製造装置"） |
-| `driverTreeTemplate` | `DriverTreeNode[]` | ❌ | ドライバーツリーの骨格テンプレート。新規Companyはこれをコピーして個別化する。空配列（未定義）で始めてもよい |
+| `driverTreeTemplate` | `DriverTreeNode[]` | ❌ | ドライバーツリーの骨格テンプレート。新規Businessはこれをコピーして個別化する。空配列（未定義）で始めてもよい |
 | `createdAt` | datetime | ✅ | 作成日時 |
 
-`DriverTreeNode` の定義は [Company](company.md#driver-tree-node) を参照（CompanyとSectorで同じ構造を共有する）。
+`DriverTreeNode` の定義は [Business](business.md#drivertreenode) を参照（BusinessとSectorで同じ構造を共有する）。
 
 ---
 
@@ -30,13 +30,14 @@ Sectorは主に2つの役割を持つ。
 
 - `name` は空文字列にできない。システム全体で一意（同名セクターの重複登録は不可）
 - `driverTreeTemplate` は未設定（空配列）でもSectorを作成できる。後から充実させてよい
-- `driverTreeTemplate` を更新しても、既存Companyの `driverTree`（コピー後に個別化されたもの）には自動反映されない（テンプレートはコピー元であり、以後の同期はしない）
+- `driverTreeTemplate` を更新しても、既存Businessの `driverTree`（コピー後に個別化されたもの）には自動反映されない（テンプレートはコピー元であり、以後の同期はしない）
 
 ---
 
 ## 他ドメインオブジェクトとの関係
 
-- **Company** — Sectorは複数のCompanyを持ち、Companyも複数のSectorに属してよい（多対多）。Companyは`sectorIds`（実質的な事業を持つSector群）と`primarySectorId`（ヘッドライン分類、ドライバーツリーの初期テンプレート用）でSectorを参照する。1つの企業が複数事業を持つ場合（例: 食品企業が半導体材料事業も持つ）を表現するための設計
+- **Company** — Sectorは複数のCompanyを持ち、Companyも複数のSectorに属してよい（多対多）。Companyは`sectorIds`（実質的な事業を持つSector群）と`primarySectorId`（ヘッドライン分類）でSectorを参照する。1つの企業が複数事業を持つ場合（例: 食品企業が半導体材料事業も持つ）を表現するための設計
+- **[Business](business.md)** — SectorはBusinessのドライバーツリーのテンプレート元になる（`Business.sectorId`、多対1）。1つのBusinessは実態として1つのSectorに属する
 - **Source** — 業界レイヤーのSourceは特定のSectorに紐づく（`layer=sector`の場合、`sectorId`を持つ）
 - **Thought** — SectorレベルのFindingへの意味づけは、Thoughtの`sectorIds`を介して行う
 - **[Theme](theme.md)** — Phase 4で導入。複数Sectorを跨ぐマクロ・業界動向はThemeとして括り、Sector×Themeの多対多で紐づける

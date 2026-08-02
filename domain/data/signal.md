@@ -23,6 +23,12 @@
 
 Signalは単体では意味を持たない。「この指標はThesisのどの前提を検証するためのものか」を`validatesThesisId`/`validatesAssumption`で明示的に紐づける。紐付けのないSignalは「何のために見ているか分からない時系列データ置き場」になるため、この紐付けを必須とする。
 
+### 事業（Business）単位への紐付け方
+
+Signal自身は`businessId`のようなフィールドを直接持たない。事業スコープは常に`validatesThesisId`が指す[Thesis](thesis.md)の`businessId`経由で辿る——Thesisが特定のBusinessに紐づいていればそのSignalも事業固有、Thesisが（`businessId`なしで）Company全体を対象にしていればそのSignalも会社全体の指標、という扱いになる。
+
+同じ実測値が複数の事業に関するThesisの前提をそれぞれ検証する場合（例: ある為替感応度の数値が、事業Aの原価前提と事業Bの原価前提の両方を検証する）は、`businessIds`のような多対多FKを持たせるのではなく、**Signalレコード自体を事業の数だけ複製し、それぞれ異なる`validatesThesisId`/`validatesAssumption`を持たせる**。Signalが「値そのもの」ではなく「値＋どの仮説の前提を検証するかという意味づけ」の組で初めて意味を持つという設計原則（Finding/Thoughtの関係と同型）に従うと、1つの値が2つの仮説の前提を検証するなら、それは2つの異なるSignalとして存在するのが一貫している。この複製は、既存の「同一`companyId`/`metric`/`period`の組み合わせで複数のSignalを持つことを許容する」という不変条件（下記参照）で元々サポートされている。
+
 ---
 
 ## 属性一覧
@@ -72,6 +78,7 @@ Signalは単体では意味を持たない。「この指標はThesisのどの�
 ## 他ドメインオブジェクトとの関係
 
 - **Company** — Signalは1つのCompanyに紐づく（多対1）
+- **[Business](business.md)** — Signalは直接のFKを持たず、`validatesThesisId`が指すThesisの`businessId`を介して間接的に事業スコープを持つ
 - **[Thesis](thesis.md)** — Signalは1つのThesisの前提を検証する（多対1、`validatesThesisId`）
 - **Finding** — 抽出元としてFindingを参照してよい（多対1、任意）
 
