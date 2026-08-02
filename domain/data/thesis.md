@@ -14,9 +14,9 @@ Thesisは時間とともに育つ。証拠（Thought）が積み重なるにつ�
 
 Thesisはまず**事業理解の仮説**として育つ。「何が実態で、なぜそう言えるか、何が起きたら崩れる／確からしくなるか」（`invalidation`/`confirmation`）は`seed`/`developing`段階から常に必須で、これは投資という文脈を離れても成立する経営理解そのものである。
 
-その理解が十分に育ち`established`へ進める段になって初めて、**市場の織り込み（コンセンサス比較）**を追加で要求する。企業の未来予測が正しくても、それが既に株価に織り込まれていればリターンはゼロ。投資で価値を生むのは「正しい予測」ではなく「コンセンサスとズレていて、かつ正しい予測」（variant perception）であるため、`established`に進めるには`consensusView`/`variant`/`whyMispriced`が埋まっていなければならない（2026-08-01決定）。事業理解と投資判断を意図的に2段階へ分離することで、「経営ならどう考えるか」を先に固め、投資家としての判断はその上に最後に載せる、という主従関係を型で表現する。
+その理解が十分に育ち`established`へ進める段になって初めて、**市場の織り込み（コンセンサス比較）**を追加で要求する。企業の未来予測が正しくても、それが既に株価に織り込まれていればリターンはゼロ。投資で価値を生むのは「正しい予測」ではなく「コンセンサスとズレていて、かつ正しい予測」（variant perception）であるため、`established`に進めるには`consensusView`/`variant`/`whyMispriced`が埋まっていなければならない。事業理解と投資判断を意図的に2段階へ分離することで、「経営ならどう考えるか」を先に固め、投資家としての判断はその上に最後に載せる、という主従関係を型で表現する。
 
-反証条件（`invalidation`）と確証条件（`confirmation`）は対で必須（反証条件のみだと判定基準が片側に偏り、statusを前進させる方向にしか働かなくなる）。2026-07-26時点の決定により、両方とも**自然言語の自由記述**として持つ（指標名・閾値・比較演算子への半構造化は将来の論点として保留）。
+反証条件（`invalidation`）と確証条件（`confirmation`）は対で必須（反証条件のみだと判定基準が片側に偏り、statusを前進させる方向にしか働かなくなる）。両方とも**自然言語の自由記述**として持つ（指標名・閾値・比較演算子への半構造化は将来の論点として保留）。
 
 ---
 
@@ -41,7 +41,7 @@ Thesisはまず**事業理解の仮説**として育つ。「何が実態で、�
 | `updatedAt` | datetime | ✅ | 最終更新日時 |
 | `tags` | string[] | ❌ | 分類用の自由記述タグ |
 
-### 将来の拡張（Phase 5で追加）
+### 将来の拡張（未実装）
 
 - `scenarios: Scenario[]` — bull/base/bearのシナリオ（`case` / `trigger` / `probability` / `targetPrice`）をThesisに付与し、InvestmentActionのポジションサイジングと接続する
 
@@ -67,8 +67,8 @@ Thesisはまず**事業理解の仮説**として育つ。「何が実態で、�
 
 - `companyId` は必須。1つのThesisは1つのCompanyに紐づく（多対1）。1つのCompanyは複数のThesisを持ってよい
 - `statement`/`invalidation`/`confirmation`/`body` はいずれも空文字列にできない（`status`によらず常に必須。事業理解の仮説として成立するための最低条件）
-- `consensusView`/`variant`/`whyMispriced` は `status` が `seed`/`developing` の間は空でよい。`established` に進める時点では空文字列にできない（事業理解と投資判断を2段階に分離する。2026-08-01決定）
-- `invalidation`/`confirmation` は自然言語の自由記述として持つ（半構造化はしない。2026-07-26決定）
+- `consensusView`/`variant`/`whyMispriced` は `status` が `seed`/`developing` の間は空でよい。`established` に進める時点では空文字列にできない（事業理解と投資判断を2段階に分離するため）
+- `invalidation`/`confirmation` は自然言語の自由記述として持つ（半構造化はしない）
 - `status` の遷移は人間が判断する（v1では自動遷移ロジックを持たない）。invalidation抵触時はまず`challenged`に置き、即座に`dropped`にはしない。`established`への遷移時は`consensusView`/`variant`/`whyMispriced`が埋まっていることを人間が確認する
 - `thoughtIds` の要素に重複は持たない。1つのThoughtは複数のThesisに属してよい（多対多）
 - `probability` を指定する場合は0以上1以下

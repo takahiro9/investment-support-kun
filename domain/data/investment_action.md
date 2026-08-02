@@ -4,9 +4,9 @@
 
 目的「どのような打ち手が取れそうか」に直接答える、システムの終端レイヤー。宛先は経営者ではなくユーザー自身。Thesis・StrategyRecommendation・market Signalを横断して合成される、システムの最終出力。
 
-システムの主目的はあくまで企業の意思決定構造の理解（[README](../README.md#目的と副産物の関係2026-08-01決定)参照）であり、InvestmentActionはその理解が十分深まった結果として最後に一段足す副産物という位置づけ。Thesisが`established`（consensusView/variant/whyMispriced充足）という条件を満たして初めて、市場織り込みを踏まえた判断材料として参照できる。StrategyRecommendationは市場の織り込み度を持たない（経営の打ち手評価に純化しているため）ので、そのまま判断材料として参照してよい。
+システムの主目的はあくまで企業の意思決定構造の理解（[README](../README.md#目的と副産物の関係)参照）であり、InvestmentActionはその理解が十分深まった結果として最後に一段足す副産物という位置づけ。Thesisが`established`（consensusView/variant/whyMispriced充足）という条件を満たして初めて、市場織り込みを踏まえた判断材料として参照できる。StrategyRecommendationは市場の織り込み度を持たない（経営の打ち手評価に純化しているため）ので、そのまま判断材料として参照してよい。
 
-Phase 4で導入し、以降Red Teamエージェント（bear case生成）とあわせて運用する。
+確証バイアス対策として、Red Teamエージェント（bear case生成）とあわせて運用する。
 
 ---
 

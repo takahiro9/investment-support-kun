@@ -13,7 +13,7 @@ Spec: `domain/usecase/investor/add_thought/usecase.md`, `domain/usecase/investor
 2. `type` を確認する:
    - `note`: 気づき・観察・主張
    - `question`: 探求したい問い・引っかかり
-   - `prediction`: 時間軸・確度つきの予測を自由記述で（「何が・いつまでに・何%くらいで起きると思うか」を本文に書く。Phase 5 で Prediction として構造化されるまでのログ）
+   - `prediction`: 時間軸・確度つきの予測を自由記述で（「何が・いつまでに・何%くらいで起きると思うか」を本文に書く。重要なものは後で `structure-prediction-from-thought` skill で Prediction として構造化する）
 3. 本文（`body`）に考察を書いてもらう（必須、空不可）。
 4. 任意でこの Thought が関係する `companyIds` / `sectorIds` / `themeIds` を確認する（id が分からなければ `list-companies`/`list-sectors`/`list-themes` skill で引く）。
 5. 対象 Company のドライバーツリーの特定ノードを埋めるものであれば、そのノード id（`driverNodeIds`）も確認する。ノード一覧は `view-company` skill（`uv run python scripts/companies.py view --id <companyId>`）の `driverTree` から拾える。`driverNodeIds` を指定する場合は必ず対応する `companyIds` も指定する。
