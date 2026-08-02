@@ -1,6 +1,6 @@
 ---
 name: register-source
-description: Register a new Source (情報源) to continuously monitor in the investment vault — an IR feed, disclosure feed, industry publication, or market-data API. Use when the investor wants to add a recurring information pipeline, not a single document.
+description: Register a new Source (情報源) to continuously monitor in the investment vault — an IR feed, disclosure feed, or industry publication. Use when the investor wants to add a recurring information pipeline, not a single document.
 ---
 
 # 情報源を登録する (Register Source)
@@ -11,15 +11,15 @@ Spec: `domain/usecase/investor/register_source/usecase.md`, `domain/usecase/inve
 
 登録対象を時間をおいて再取得したとき、「新着項目の一覧」が返ってくる可能性があるか投資家に確認する（`domain/data/source.md#source-か-finding-かの判定`）。
 
-- Yes（適時開示フィード、IR RSS、業界紙の一覧、市場データAPIなど）→ このスキルで Source として登録する。
+- Yes（適時開示フィード、IR RSS、業界紙の一覧など）→ このスキルで Source として登録する。
 - No（1本の決算短信PDF、1本のニュース記事など単発・静的なコンテンツ）→ Source としては登録せず、`add-finding` skill を案内する。
 
 ## 手順
 
 1. 投資家に以下を確認する:
-   - `type`: `rss_feed` / `web_page` / `youtube_channel` / `disclosure_feed` / `market_data_api` / `newsletter`
-   - `layer`: `company` / `sector` / `theme` / `macro` / `market`
-   - `layer` に応じた参照先（`layer` が `company`/`market` なら `companyId`、`sector` なら `sectorId`、`theme` なら `themeId`）。id が分からなければ `list-companies` / `list-sectors` / `list-themes` skill で引く。
+   - `type`: `rss_feed` / `web_page` / `youtube_channel` / `disclosure_feed` / `newsletter`
+   - `layer`: `company` / `sector` / `theme` / `macro`
+   - `layer` に応じた参照先（`layer` が `company` なら `companyId`、`sector` なら `sectorId`、`theme` なら `themeId`）。id が分からなければ `list-companies` / `list-sectors` / `list-themes` skill で引く。
    - `name`（表示名）、`url`、任意で `description`
 2. UUID を生成する: `uuidgen`
 3. 以下を実行する:

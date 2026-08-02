@@ -14,9 +14,9 @@
 ```yaml
 ---
 id: <uuid>
-type: disclosure_feed   # rss_feed | web_page | youtube_channel | disclosure_feed | market_data_api | newsletter
-layer: company           # company | sector | theme | macro | market
-companyId: <uuid>        # layer が company / market の場合必須
+type: disclosure_feed   # rss_feed | web_page | youtube_channel | disclosure_feed | newsletter
+layer: company           # company | sector | theme | macro
+companyId: <uuid>        # layer が company の場合必須
 sectorId: null            # layer が sector の場合必須
 themeId: null              # layer が theme の場合必須
 name: "サンプル株式会社 適時開示"

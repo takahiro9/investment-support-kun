@@ -8,7 +8,7 @@ Thoughtは**1つ以上のFindingに根ざす**（`findingIds`）。複数の事�
 
 Finding↔Company/Sector/Themeの関連はFinding側ではなくThought側に存在する。したがって、あるCompany/Sector/Themeに属するFinding群は**Thoughtを辿って**求める。1つのThoughtを複数のCompany/Sector/Themeに結びつけることもできる。
 
-> 「複数のThoughtを束ねて1つの投資仮説に収斂させる」のは[Thesis](thesis.md)の役割。Thoughtは生の事実（Finding）に直接根ざした解釈で、statusを持たない。Thesisは Thought に根ざした仮説で、statusで育てていく。
+> 「複数のThoughtを束ねて1つの事業仮説に収斂させる」のは[Thesis](thesis.md)の役割。Thoughtは生の事実（Finding）に直接根ざした解釈で、statusを持たない。Thesisは Thought に根ざした仮説で、statusで育てていく。
 
 ### ドライバーツリーのノードへの紐付け
 
@@ -64,7 +64,7 @@ Phase 5でPredictionエンティティを導入するまでの間、時間軸・
 
 - **Finding** — Thoughtは1つ以上のFindingに根ざす（多対多）。Findingを削除すると、そのFindingは各Thoughtの`findingIds`から除かれ、根拠を失ったThoughtは削除される
 - **Company / Sector / Theme** — `companyIds`/`sectorIds`/`themeIds`を介して関連付ける。Company/Sector/Theme↔Findingの関連はこのThoughtを介してのみ成立する
-- **[Thesis](thesis.md)** — 複数のThoughtが束ねられて1つのThesis（投資仮説）へ収斂する（多対多）。1つのThoughtは複数のThesisに属してよい。束ね先はThesis側の`thoughtIds`が持つ
+- **[Thesis](thesis.md)** — 複数のThoughtが束ねられて1つのThesis（事業仮説）へ収斂する（多対多）。1つのThoughtは複数のThesisに属してよい。束ね先はThesis側の`thoughtIds`が持つ
 - **[Prediction](prediction.md)** — `type=prediction`のThoughtは、Phase 5での構造化時に`Prediction.sourceThoughtId`として参照されうる
 
 ---

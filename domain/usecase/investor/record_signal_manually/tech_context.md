@@ -1,7 +1,7 @@
 # 技術コンテキスト: 時系列指標を手動で記録する
 
 > このユースケースが書き込む Vault ファイルの実装仕様。全体方針は [architecture.md](../../../../tech_context/architecture.md) を参照。
-> Signal は構造化データAPIからの自動取得（[fetch_signals_from_market_data](../../system/fetch_signals_from_market_data.md)）や、Findingの自然言語からのLLM抽出（[extract_signal_from_finding](../../system/extract_signal_from_finding.md)）でも生成される。スキーマはこのファイルを正とする。
+> Signal は構造化データAPIからの自動取得（[fetch_financial_signals_from_structured_api](../../system/fetch_financial_signals_from_structured_api.md)）や、Findingの自然言語からのLLM抽出（[extract_signal_from_finding](../../system/extract_signal_from_finding.md)）でも生成される。スキーマはこのファイルを正とする。
 
 ## Vault ファイル
 
@@ -15,7 +15,7 @@
 ---
 id: <uuid>
 companyId: <uuid>
-category: operational      # financial | operational | leading | market
+category: operational      # financial | operational | leading
 metric: "operating_margin"
 period: "2027Q2"
 value: 12.3

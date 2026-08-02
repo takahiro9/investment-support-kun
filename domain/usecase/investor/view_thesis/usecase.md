@@ -1,8 +1,8 @@
-# 投資仮説の詳細を閲覧する (View Thesis)
+# 事業仮説の詳細を閲覧する (View Thesis)
 
 ## 目的・概要
 
-特定の `Thesis`（投資仮説）について、その論証内容・コンセンサス比較・反証/確証条件・現在のライフサイクル状態、および根拠となった `Thought` 群を確認する。仮説の妥当性を見直し、次に何を検証すべきかを判断するための画面。
+特定の `Thesis`（事業仮説）について、その論証内容・反証/確証条件・現在のライフサイクル状態、および根拠となった `Thought` 群を確認する。仮説の妥当性を見直し、次に何を検証すべきかを判断するための画面。
 
 ## 事前条件
 
@@ -15,7 +15,7 @@
 ## 基本フロー（正常系）
 
 1. 投資家は、Company 詳細画面や Thesis 一覧から特定の `Thesis` を選択する。
-2. システムは、指定された `Thesis` の詳細情報（`statement`、`consensusView`/`variant`/`whyMispriced`、`invalidation`/`confirmation`、`horizon`/`probability`、`status`、論証本文）を取得する。
+2. システムは、指定された `Thesis` の詳細情報（`statement`、`invalidation`/`confirmation`、`horizon`/`probability`、`status`、論証本文）を取得する。
 3. システムは、`thoughtIds` が指す `Thought` 群を取得し、それぞれが根ざす `Finding` とあわせて提示する。
 4. システムは、この Thesis を `validatesThesisId` に持つ `Signal` の一覧、および `thesisId` に持つ `Prediction` の一覧が存在すれば、あわせて取得する。
 5. システムは、以上の情報を投資家に提示する。`status` は目立つ位置に、`invalidation`/`confirmation` は対で表示する。

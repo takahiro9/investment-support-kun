@@ -14,7 +14,7 @@ Spec: `domain/usecase/investor/view_strategy_recommendations/usecase.md`
    ```
    uv run python scripts/strategy_recommendations.py list --company-id "<id>"
    ```
-3. stdout の JSON 配列（各要素: `option`, `executionEvidence`, `executionProbability`, `impactIfExecuted`, `relatedThesisIds`, `createdAt`）を評価テーブルとして提示する。投資家の関心に応じて `impactIfExecuted` の大きい順など並び替えて見せる。市場の織り込みを踏まえた判断が必要な場合は、`relatedThesisIds` が指す `Thesis` の `consensusView`/`variant`/`whyMispriced` を合わせて参照するよう促す。
+3. stdout の JSON 配列（各要素: `option`, `executionEvidence`, `executionProbability`, `impactIfExecuted`, `relatedThesisIds`, `createdAt`）を評価テーブルとして提示する。投資家の関心に応じて `impactIfExecuted` の大きい順など並び替えて見せる。
 4. 0件の場合は「まだ評価が行われていません」と伝え、`generate-strategy-recommendation` skill を提案する。
 
 ## 注意
