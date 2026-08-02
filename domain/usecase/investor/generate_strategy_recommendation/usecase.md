@@ -2,7 +2,7 @@
 
 ## 目的・概要
 
-投資家が、対象 `Company` について「経営が取りうる打ち手の選択肢」を評価する `StrategyRecommendation` の生成をシステムに依頼する。宛先は経営者ではなく投資家自身であり、出力は「A社はこうすべき」という規範的な提案ではなく、**打ち手の選択肢 × 実行確率 × 業績インパクト × 市場の織り込み度** の評価テーブルである。この評価は、投資家自身の打ち手（[InvestmentAction](../../../data/investment_action.md)）を組み立てるための中間生成物として使う。
+投資家が、対象 `Company` について「経営が取りうる打ち手の選択肢」を評価する `StrategyRecommendation` の生成をシステムに依頼する。宛先は経営者ではなく投資家自身であり、出力は「A社はこうすべき」という規範的な提案ではなく、**打ち手の選択肢 × 実行確率 × 業績インパクト** の評価テーブルである。市場の織り込み度は扱わない（経営の打ち手そのものの評価には不要なため）。この評価は、投資家自身の打ち手（[InvestmentAction](../../../data/investment_action.md)）を組み立てるための中間生成物として使う。
 
 ## 事前条件
 
@@ -16,12 +16,11 @@
 ## 基本フロー（正常系）
 
 1. 投資家は、対象の `Company` を選択し、経営の打ち手の評価をリクエストする。
-2. システムは、対象 Company の `Thesis` 群、`Signal`（`market`/`financial`/`operational`/`leading` 各カテゴリ）、および業界・政策・社会動向を扱う `Sector`/`Theme` レイヤーの `Finding`/`Thought` を収集する。
+2. システムは、対象 Company の `Thesis` 群、`Signal`（`financial`/`operational`/`leading` 各カテゴリ）、および業界・政策・社会動向を扱う `Sector`/`Theme` レイヤーの `Finding`/`Thought` を収集する。
 3. システムは、収集した情報をもとに、経営が取りうる打ち手の選択肢（`option`）を複数洗い出す。
 4. システムは、選択肢ごとに以下を評価する:
    - `executionEvidence` / `executionProbability`（実行確率とその根拠。過去の資本配分実績・経営陣のインセンティブ設計・実行ケイパビリティ等から）
    - `impactIfExecuted`（実行された場合の業績インパクト）
-   - `pricedIn`（市場がこれをどの程度織り込み済みか。`market` カテゴリの Signal を参照）
 5. システムは、評価した選択肢それぞれを `StrategyRecommendation` エンティティとして保存する。根拠にした Thesis 群があれば `relatedThesisIds` に記録する。
 6. システムは、生成された評価テーブルを投資家に提示する。
 
@@ -29,8 +28,6 @@
 
 - **2a. 対象 Company に Thesis が存在しない場合:**
   システムは評価を実行せず、[Create Thesis](../create_thesis/usecase.md) への導線を提示する。
-- **4a. `pricedIn` の判定に必要な `market` カテゴリの Signal が不足している場合:**
-  システムは `pricedIn` を判定困難である旨とともに `partially_priced` を暫定値として提示し、市場データの継続取得（[Register Source](../register_source/usecase.md)、`layer=market`）を促す。
 - **3a. 洗い出せる選択肢が0件の場合:**
   システムは「現時点で評価に足る材料が揃っていません」と表示し、追加で必要な Finding / Thought の種類を提示する。
 

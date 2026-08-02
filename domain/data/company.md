@@ -2,18 +2,18 @@
 
 ## 概要
 
-投資判断の中心単位。ticker・市場区分・セクター・決算期などのIDを持つマスタエンティティ。1つのCompanyに対し、複数のSource（IR、業界ニュース、市場データ等）・複数の[Business](business.md)（個別事業単位）・複数のThesisが紐づく。
+投資判断の中心単位。ticker・市場区分・セクター・決算期などのIDを持つマスタエンティティ。1つのCompanyに対し、複数のSource（IR、業界ニュース等）・複数の[Business](business.md)（個別事業単位）・複数のThesisが紐づく。
 
 事業構造の分解木（driverTree）と事業単位の現在地スナップショットは[Business](business.md)が持つ。Companyは「銘柄としてのマスタ情報」に専念し、「実際にどんな事業から構成されているか」はBusinessに委ねる（詳細は[Business](business.md)を参照）。
 
 ### 1つのCompanyは複数のSectorに属してよい
 
-銘柄としての市場区分（`market`）は単一だが、事業の実態は複数のSectorにまたがることが珍しくない（例: 味の素は食品企業として分類されるが、ABF（半導体パッケージング材料）事業も持つ）。市場がこの複数事業性を見落として単一セクターの企業として評価している場合、それ自体が[Thesis](thesis.md)の`whyMispriced`の材料になりうる。そのため`sectorId`は単一FKにせず、`sectorIds`（複数可）+ `primarySectorId`（既定のヘッドライン分類）の形で持つ。
+銘柄としての市場区分（`market`）は単一だが、事業の実態は複数のSectorにまたがることが珍しくない（例: 味の素は食品企業として分類されるが、ABF（半導体パッケージング材料）事業も持つ）。この複数事業性を見落として単一セクターの企業として理解すると、事業構造の解像度が粗くなる。そのため`sectorId`は単一FKにせず、`sectorIds`（複数可）+ `primarySectorId`（既定のヘッドライン分類）の形で持つ。
 
 - `sectorIds` — このCompanyが実質的な事業を持つSectorすべて（パイロットの「同一セクター内3〜5社」やSector別の銘柄一覧は、いずれかの`sectorIds`に一致するCompanyを対象にする）。配下の各[Business](business.md)の`sectorId`は、必ずこの`sectorIds`に含まれる
-- `primarySectorId` — 市場が主にどのセクターの企業として評価しているか（`sectorIds`のいずれか1つ）。あくまで「市場からの見え方」であり、実際にどの事業が中核かを表す[Business](business.md)`.isPrimary`とは独立している（両者のズレ自体が`whyMispriced`の材料になりうる）
+- `primarySectorId` — 市場が主にどのセクターの企業として評価しているか（`sectorIds`のいずれか1つ）。あくまで「市場からの見え方」であり、実際にどの事業が中核かを表す[Business](business.md)`.isPrimary`とは独立している
 
-かつては複数事業性をCompany直下の`driverTree`のノード単位`sectorId`で表現していたが、事業自体を[Business](business.md)という第一級エンティティに切り出したことで、「食品事業は食品Sector、ABF事業は半導体材料Sector」のようにBusinessごとの`sectorId`で素直に表現できるようになった。
+複数事業性は、事業ごとに独立した[Business](business.md)レコード（それぞれが`sectorId`を持つ）として表現する。「食品事業は食品Sector、ABF事業は半導体材料Sector」のように、事業単位でそのまま複数セクター性を表せる。
 
 ### 現在地スナップショット（会社全体・複数事業にまたがる状況のas-of更新サマリ）
 

@@ -16,7 +16,7 @@ import sys
 import index as idx
 import vault
 
-TYPES = ["web_article", "memo", "pdf", "youtube", "image", "disclosure", "market_data", "link"]
+TYPES = ["web_article", "memo", "pdf", "youtube", "image", "disclosure", "link"]
 EVIDENCE_TIERS = ["primary_disclosure", "company_issued", "third_party", "inference"]
 URL_REQUIRED_TYPES = {"web_article", "youtube", "disclosure", "link"}
 

@@ -6,13 +6,13 @@
 
 Companyが持つのは ticker・市場区分・決算期のような「銘柄としてのマスタ情報」であり、Businessが持つのは「その銘柄の中身が実際にどんな事業から構成されているか」という実態である。1つのCompanyが複数のSectorにまたがる事業を持つケース（例: 味の素は食品企業として分類されるが、ABF（半導体パッケージング材料）事業も持つ）は、事業ごとに独立したBusinessレコードとして表現し、それぞれに実態の`sectorId`を持たせる。
 
-### なぜCompanyから切り出すか
+### Businessを独立したエンティティとして持つ理由
 
-当初はCompanyが単一の`driverTree`（フラット配列 + `parentId`）を持ち、ルート直下のセグメントノードに`sectorId`を個別付与することで複数事業性を表現していた。しかし、[Thesis](thesis.md)や[Signal](signal.md)を「この会社について」ではなく「この会社のこの事業について」の単位で持ちたいという要求が出てきたため、事業自体を他エンティティからFKで参照できる第一級のエンティティとして切り出した。これにより:
+Businessを他エンティティからFKで参照できる第一級のエンティティとして持つことで、以下が可能になる。
 
 - 事業ごとに独立した`driverTree`・`currentSnapshot`を持てる（ある事業は解像度が高いが別の事業はまだ空白、という状態を個別に可視化できる）
-- `Thesis`/`Signal`を会社単位・事業単位のどちらでも紐づけられるようになる（詳細は各ドキュメントを参照）
-- ノード単位で`sectorId`を分岐させるという回避策が不要になる（Business自体が`sectorId`を持つため、ツリーの全ノードは暗黙にそのSectorに属する）
+- [Thesis](thesis.md)/[Signal](signal.md)を会社単位・事業単位のどちらでも紐づけられる（詳細は各ドキュメントを参照）
+- Business自体が`sectorId`を持つため、ツリーの全ノードは暗黙にそのSectorに属する（ノード単位で`sectorId`を分岐させる必要がない）
 
 ### ドライバーツリー（事業構造の骨格）
 
@@ -65,7 +65,7 @@ Findingが数十〜数百件溜まった状態で「この事業は今どうい�
 | `parentId` | string \| null | ❌ | 親ノードのid。ルートノードは`null` |
 | `formula` | string | ❌ | このノードが子ノードからどう計算されるかの説明（例: "数量 × 単価"）。葉ノードは空でよい |
 
-木構造はフラットな配列 + `parentId` で表現する（ネスト構造にはしない。ノードの追加・移動が配列操作だけで完結するため）。1つのBusinessは単一のSectorにしか属さないため、旧`Company.DriverTreeNode`が持っていたノード単位の`sectorId`は不要になった。
+木構造はフラットな配列 + `parentId` で表現する（ネスト構造にはしない。ノードの追加・移動が配列操作だけで完結するため）。1つのBusinessは単一のSectorにしか属さないため、ノード単位で`sectorId`を持つ必要はない（Business自体の`sectorId`がツリー全体に適用される）。
 
 ### `BusinessSnapshot`
 
@@ -80,7 +80,7 @@ Findingが数十〜数百件溜まった状態で「この事業は今どうい�
 
 - 1つの[Company](company.md)は1つ以上のBusinessを持つ（Companyの登録と同時に、少なくとも1つのBusinessが`isPrimary=true`で作成される）
 - 同一`companyId`配下のBusiness群のうち、`isPrimary=true`はちょうど1つ
-- `sectorId`は、親Companyの`sectorIds`に含まれる要素でなければならない。Business作成時、そのSectorがまだ`companyIds`の`sectorIds`に含まれていなければ自動的に追加する
+- `sectorId`は、親Companyの`sectorIds`に含まれる要素でなければならない。Business作成時、そのSectorが親Companyの`sectorIds`にまだ含まれていなければ自動的に追加する
 - Business作成時、`driverTree`は指定がなければ`sectorId`の指すSectorの`driverTreeTemplate`をコピーして初期化する（テンプレートが空ならBusinessの`driverTree`も空で始まる）
 - `driverTree`の各ノードの`id`はBusiness内で一意。`parentId`は同一Business内の別ノードの`id`を指す（存在しない`parentId`は不可。ルートは`null`）
 - `currentSnapshot`はシステムが自動計算するものではなく、Finding/Thought蓄積を踏まえて都度書き直す運用上のフィールド（v1では自動生成ロジックを持たない）

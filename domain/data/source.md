@@ -14,13 +14,10 @@ Sourceが紐づく範囲（スコープ）は、下記のとおり層に分け�
 |---|---|---|
 | `company` | 個別Company | IR RSS、決算説明資料、EDINET/TDnetの適時開示 |
 | `sector` | Sector | 業界紙・業界団体レポート、サプライチェーン上下流のニュース |
-| `theme` | Theme（Phase 4以降） | 複数Sectorを跨ぐ政策・サプライチェーン動向 |
+| `theme` | Theme | 複数Sectorを跨ぐ政策・サプライチェーン動向 |
 | `macro` | 全体共通 | 政策（官公庁の規制・補助金動向）、社会動向（人口動態、消費トレンド、技術トレンド） |
-| `market` | 個別Company | 株価、バリュエーション指標（PER等）、アナリストコンセンサスとその改訂履歴 |
 
 `company`層・`sector`層・`theme`層のFindingは、それぞれ紐づく単位（Company/Sector/Theme）を跨いで参照されうる。特に`sector`層・`macro`層・`theme`層のFindingは、複数のCompanyのThesisから共通して参照される想定（1つの業界動向・政策ニュースが複数銘柄のThesisに影響しうる）。
-
-`market`層は「予測がすでに株価に織り込まれているか」を判定するために必須のレイヤー（Thesisの`variant`/`whyMispriced`の前提データ）。Phase 1の時点で、Signal導入（Phase 3）を待たずに登録を始める。
 
 ---
 
@@ -30,15 +27,13 @@ Sourceが紐づく範囲（スコープ）は、下記のとおり層に分け�
 
 > **その対象を時間をおいて再取得したとき、「新着項目の一覧」が返ってくる可能性があるか？**
 >
-> - **Yes → Source（流れ）** … IR RSS、適時開示フィード、業界紙のニュース一覧、市場データAPIなど。再取得すると新着が増えていく。
-> - **No → Finding（スナップショット）** … 1本の決算説明資料PDF、1本のニュース記事、1回分の株価スナップショットなど。再取得しても同じものが返る。
+> - **Yes → Source（流れ）** … IR RSS、適時開示フィード、業界紙のニュース一覧など。再取得すると新着が増えていく。
+> - **No → Finding（スナップショット）** … 1本の決算説明資料PDF、1本のニュース記事など。再取得しても同じものが返る。
 
 例:
 
 - `https://www.release.tdnet.info/...`（適時開示が流れてくるフィード）→ **Source**
 - 特定の1件の決算短信PDF → **Finding**
-- 特定企業の株価API（呼ぶたびに最新値が更新される）→ **Source**（`layer=market`、`type=market_data_api`）
-- ある1時点の株価・PERのスナップショットを手動でメモしたもの → **Finding**（`type=market_data`）
 
 ---
 
@@ -49,7 +44,7 @@ Sourceが紐づく範囲（スコープ）は、下記のとおり層に分け�
 | `id` | string (UUID) | ✅ | 一意識別子 |
 | `type` | `SourceType` | ✅ | 情報源の種別 |
 | `layer` | `SourceLayer` | ✅ | スコープ層 |
-| `companyId` | string (FK) | △ | `layer`が`company`または`market`のとき必須 |
+| `companyId` | string (FK) | △ | `layer`が`company`のとき必須 |
 | `sectorId` | string (FK) | △ | `layer`が`sector`のとき必須 |
 | `themeId` | string (FK) | △ | `layer`が`theme`のとき必須 |
 | `name` | string | ✅ | 表示名 |
@@ -72,7 +67,6 @@ Sourceが紐づく範囲（スコープ）は、下記のとおり層に分け�
 | `web_page` | RSSを持たないが、新着コンテンツが一覧・追加されていくWebページ（スクレイピング対象） |
 | `youtube_channel` | YouTubeチャンネル（決算説明会の録画配信等） |
 | `disclosure_feed` | EDINET/TDnet等の適時開示フィード |
-| `market_data_api` | 株価・バリュエーション・アナリストコンセンサス等を取得する構造化データAPI |
 | `newsletter` | メールニュースレター |
 
 ### `SourceLayer`
@@ -83,7 +77,6 @@ Sourceが紐づく範囲（スコープ）は、下記のとおり層に分け�
 | `sector` | Sector | `sectorId` |
 | `theme` | Theme | `themeId` |
 | `macro` | 全体共通 | なし |
-| `market` | 個別Company | `companyId` |
 
 ### `SourceStatus`
 
@@ -102,13 +95,12 @@ Sourceが紐づく範囲（スコープ）は、下記のとおり層に分け�
 - `name` は空文字列にできない
 - `url` はシステム全体で一意
 - `status`が`active`のSourceのみ情報取得処理の対象となる
-- `market`層のSourceはPhase 1から登録対象とする（Signal導入前でも市場データの継続取得を始める）
 
 ---
 
 ## 他ドメインオブジェクトとの関係
 
-- **Company** — `layer=company`または`market`のSourceはCompanyに紐づく
+- **Company** — `layer=company`のSourceはCompanyに紐づく
 - **Sector** — `layer=sector`のSourceはSectorに紐づく
 - **Theme** — `layer=theme`のSourceはThemeに紐づく
 - **Finding** — Sourceからの取得によってFindingが生成される。生成されたFindingは取得元Sourceへの関連（FK）を持たず、出所は`url`/`sourceUrl`に記録されるのみ

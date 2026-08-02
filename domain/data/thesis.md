@@ -1,24 +1,24 @@
-# Thesis — 投資仮説
+# Thesis — 事業仮説
 
 ## 概要
 
-複数の[Thought](thought.md)（意味づけ）を束ね、一つの**投資仮説へ収斂させる統合層**。層構造の最上段に位置する。
+複数の[Thought](thought.md)（意味づけ）を束ね、一つの**事業理解の仮説へ収斂させる統合層**。層構造の最上段に位置する。
 
 ```
-Finding（事実）→ Thought（意味）→ Thesis（投資仮説への統合）
+Finding（事実）→ Thought（意味）→ Thesis（事業仮説への統合）
 ```
 
 Thoughtが**1つ以上のFindingに根ざした注釈**であるのに対し、Thesisは**複数のThoughtから成る**（多対多）。単一の出所を持たず、散らばった意味づけが収斂して立ち上がる主張がThesisである。証拠の単位をFindingではなくThoughtに取るのは、裸のFindingはスタンスを持たず、意味づけ（スタンス）はすべてThoughtが担うという原則に従うため。
 
 Thesisは時間とともに育つ。証拠（Thought）が積み重なるにつれ`status`が遷移し、`updatedAt`が更新される、認識論的ライフサイクルを持つ。
 
-Thesisの最大の特徴は、**市場の織り込み（コンセンサス比較）を必須で持つ**こと。企業の未来予測が正しくても、それが既に株価に織り込まれていればリターンはゼロ。投資で価値を生むのは「正しい予測」ではなく「コンセンサスとズレていて、かつ正しい予測」（variant perception）であるため、`consensusView`/`variant`/`whyMispriced`が埋まらないThesisはstatusを先に進められない。
+Thesisは**事業理解の仮説**である。「何が実態で、なぜそう言えるか、何が起きたら崩れる／確からしくなるか」（`invalidation`/`confirmation`）は常に必須で、これは投資という文脈を離れても成立する経営理解そのものである。
 
-反証条件（`invalidation`）と確証条件（`confirmation`）は対で必須（反証条件のみだと判定基準が片側に偏り、statusを前進させる方向にしか働かなくなる）。2026-07-26時点の決定により、両方とも**自然言語の自由記述**として持つ（指標名・閾値・比較演算子への半構造化は将来の論点として保留）。
+反証条件（`invalidation`）と確証条件（`confirmation`）は対で必須（反証条件のみだと判定基準が片側に偏り、statusを前進させる方向にしか働かなくなる）。両方とも**自然言語の自由記述**として持つ（指標名・閾値・比較演算子への半構造化は将来の論点として保留）。
 
 ### Businessへの紐付け（任意）
 
-Thesisは必ず1つのCompanyに紐づくが、[Business](business.md)（個別事業単位）への紐付けは任意（`businessId`）とする。「このセグメントの利益率が改善する」のように特定事業に閉じた仮説はBusinessに紐づけ、「コングロマリット・ディスカウントが解消する」「資本政策の転換で全社的に再評価される」のように事業を横断する・事業に依存しない仮説は`businessId`を空のままCompany全体を対象とする。1つのCompanyが複数のThesisを持つのと同様、1つのBusinessも複数のThesisを持ってよい。
+Thesisは必ず1つのCompanyに紐づくが、[Business](business.md)（個別事業単位）への紐付けは任意（`businessId`）とする。「この事業の利益率が改善する」のように特定事業に閉じた仮説はBusinessに紐づけ、「全社的な資本配分方針が転換する」「複数事業間でのシナジーが強まる」のように事業を横断する・特定の事業に依存しない仮説は`businessId`を空のままCompany全体を対象とする。1つのCompanyが複数のThesisを持つのと同様、1つのBusinessも複数のThesisを持ってよい。
 
 ---
 
@@ -30,9 +30,6 @@ Thesisは必ず1つのCompanyに紐づくが、[Business](business.md)（個別�
 | `companyId` | string (FK) | ✅ | この仮説が対象とするCompany |
 | `businessId` | string (FK) | ❌ | この仮説が対象とする特定のBusiness（任意。指定しない場合はCompany全体を対象とする） |
 | `statement` | string | ✅ | 仮説を一言で表した見出し（例: "この企業はこうなる"） |
-| `consensusView` | string | ✅ | 市場は今どう見ているか（コンセンサス予想、現在の織り込み） |
-| `variant` | string | ✅ | 自分の見立てはどこがどうズレているか（収益の源泉） |
-| `whyMispriced` | string | ✅ | なぜ市場がまだ気づいていない/織り込めていないと言えるか |
 | `invalidation` | string | ✅ | 何が起きたら崩れるか（反証条件、自由記述） |
 | `confirmation` | string | ✅ | 何が起きたら確度が上がるか（確証条件、自由記述） |
 | `horizon` | date | ❌ | いつまでの時間軸を想定した仮説か（個別の予測時期はPredictionで扱うため、ここでは目安） |
@@ -44,7 +41,7 @@ Thesisは必ず1つのCompanyに紐づくが、[Business](business.md)（個別�
 | `updatedAt` | datetime | ✅ | 最終更新日時 |
 | `tags` | string[] | ❌ | 分類用の自由記述タグ |
 
-### 将来の拡張（Phase 5で追加）
+### 将来の拡張（未実装）
 
 - `scenarios: Scenario[]` — bull/base/bearのシナリオ（`case` / `trigger` / `probability` / `targetPrice`）をThesisに付与し、InvestmentActionのポジションサイジングと接続する
 
@@ -60,7 +57,7 @@ Thesisは必ず1つのCompanyに紐づくが、[Business](business.md)（個別�
 |---|---|
 | `seed` | 萌芽。思いつき・問いの段階 |
 | `developing` | 育成中。Thoughtを束ねながら検証・肉付けしている最中 |
-| `established` | 確立。十分なThoughtに支持され、consensusView/variant/whyMispricedが実用的な粒度で書けている |
+| `established` | 確立。十分なThoughtに支持され、statement/invalidation/confirmationが実用的な粒度で書けている |
 | `challenged` | 要レビュー。invalidation条件に抵触した際にまずここへ置く。一時的なノイズか本質的な崩れかを人間が見極めてから`dropped`または復帰を判断する |
 | `dropped` | 棄却。反証された、あるいは追わないことにした |
 
@@ -70,8 +67,8 @@ Thesisは必ず1つのCompanyに紐づくが、[Business](business.md)（個別�
 
 - `companyId` は必須。1つのThesisは1つのCompanyに紐づく（多対1）。1つのCompanyは複数のThesisを持ってよい
 - `businessId` を指定する場合、`companyId` が指すCompany配下のBusinessのidであること
-- `statement`/`consensusView`/`variant`/`whyMispriced`/`invalidation`/`confirmation`/`body` はいずれも空文字列にできない
-- `invalidation`/`confirmation` は自然言語の自由記述として持つ（半構造化はしない。2026-07-26決定）
+- `statement`/`invalidation`/`confirmation`/`body` はいずれも空文字列にできない（`status`によらず常に必須。事業理解の仮説として成立するための最低条件）
+- `invalidation`/`confirmation` は自然言語の自由記述として持つ（半構造化はしない）
 - `status` の遷移は人間が判断する（v1では自動遷移ロジックを持たない）。invalidation抵触時はまず`challenged`に置き、即座に`dropped`にはしない
 - `thoughtIds` の要素に重複は持たない。1つのThoughtは複数のThesisに属してよい（多対多）
 - `probability` を指定する場合は0以上1以下

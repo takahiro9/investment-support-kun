@@ -7,7 +7,7 @@ description: Record the investor's own action (entry/add/hold/reduce/exit) on a 
 
 Spec: `domain/usecase/investor/create_investment_action/usecase.md`, `domain/usecase/investor/create_investment_action/tech_context.md`
 
-宛先は経営者ではなく投資家自身。`Thesis`/`StrategyRecommendation`/`market` カテゴリの `Signal` を横断して合成される、システムの最終出力。
+宛先は経営者ではなく投資家自身。`Thesis`/`StrategyRecommendation`/`Signal` を横断して合成される、システムの最終出力。
 
 ## 手順
 
