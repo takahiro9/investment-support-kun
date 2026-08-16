@@ -485,16 +485,13 @@ table.companies td.num { font-family: var(--font-mono); font-variant-numeric: ta
 .form-field { display: flex; flex-direction: column; gap: 0.3rem; font-size: 12px; color: var(--text-dim); }
 .form-label { font-size: 12px; color: var(--text-dim); }
 .sector-check-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.prompt-textarea {
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--text);
-  background: var(--surface-2);
+.add-company-console {
+  display: flex;
+  height: 380px;
+  background: var(--term-bg);
   border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  padding: 0.55rem 0.7rem;
-  resize: vertical;
-  line-height: 1.6;
+  border-radius: 8px;
+  overflow: hidden;
 }
 .form-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
 .form-actions button { font-family: var(--font-mono); font-size: 12px; border-radius: 6px; padding: 0.4rem 0.75rem; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text-dim); }

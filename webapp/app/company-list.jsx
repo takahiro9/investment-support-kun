@@ -1,10 +1,11 @@
 /* investment-support-kun web app — Company list: an overview table of every
    registered Company, plus "企業を追加". Adding a Company does not write to
    the Vault directly (this server is a read-only viewer, see serve.py) —
-   the form seeds a natural-language prompt into a Claude Code session (see
-   claude.jsx's seedPrompt, the same mechanism the dashboard's "深掘り"
-   buttons use) so the actual write still goes through the register-company
-   skill's validation/dedup/driver-tree bootstrap. */
+   the form opens a live Claude Code session (a real pty console, via
+   claude.jsx's SessionTerminal) so the investor types the instruction
+   straight into the `claude` CLI itself, and the actual write still goes
+   through the register-company skill's validation/dedup/driver-tree
+   bootstrap. */
 
 function CompanyRow({ company, sectorById, thesisCount, onOpen }) {
   const primarySector = sectorById[company.primarySectorId];
@@ -31,51 +32,54 @@ function CompanyRow({ company, sectorById, thesisCount, onOpen }) {
 
 const ADD_COMPANY_PLACEHOLDER = "例: トヨタ自動車（証券コード7203、東証プライム、決算期3月末）を自動車セクターで登録して";
 
+/* Opens a dedicated Claude Code session the moment the form mounts and
+   embeds its live terminal inline — no staging textarea, no separate
+   "send" step. The investor types the registration instruction straight
+   into the real `claude` CLI pty, exactly as if they'd opened a console. */
 function AddCompanyForm({ sectors, onClose }) {
   const sessions = useSessions();
-  const [prompt, setPrompt] = React.useState("");
-  const [sent, setSent] = React.useState(false);
+  const [sessionId, setSessionId] = React.useState(null);
+  const [error, setError] = React.useState(null);
+  const startedRef = React.useRef(false);
 
-  const submit = async (e) => {
-    e.preventDefault();
-    const text = prompt.trim();
-    if (!text) return;
-    await sessions.seedPrompt(text);
-    setSent(true);
-  };
+  React.useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    if (sessions.selected) {
+      setSessionId(sessions.selected);
+      return;
+    }
+    sessions.create("企業を追加")
+      .then((row) => setSessionId(row && row.id))
+      .catch((ex) => setError(String(ex)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <form className="card add-company-form" onSubmit={submit}>
+    <div className="card add-company-form">
       <div className="section-label">企業を追加</div>
       {sectors.length > 0
         ? (
           <div className="form-field">
-            <div className="form-label">登録済みのSector（参考。文中で指定してください）</div>
+            <div className="form-label">登録済みのSector（参考。プロンプト中で指定してください）</div>
             <div className="sector-check-list">
               {sectors.map((s) => <span key={s.id} className="chip">{s.name}</span>)}
             </div>
           </div>
         )
-        : <p className="empty-hint">まだSectorが登録されていません。「◯◯セクターも一緒に登録して」のように文中に含めても構いません。</p>}
-      <div className="form-field">
-        <div className="form-label">Claude Codeへの指示（自由記述）</div>
-        <textarea
-          className="prompt-textarea"
-          rows={4}
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder={ADD_COMPANY_PLACEHOLDER}
-        />
+        : <p className="empty-hint">まだSectorが登録されていません。「◯◯セクターも一緒に登録して」のようにプロンプトに含めても構いません。</p>}
+      <p className="empty-hint">下のコンソールに直接指示を入力してください（例: {ADD_COMPANY_PLACEHOLDER}）</p>
+      <div className="add-company-console">
+        {error
+          ? <div className="terminal-empty">セッションを開始できませんでした: {error}</div>
+          : sessionId
+            ? <SessionTerminal key={sessionId} sessionId={sessionId} />
+            : <div className="terminal-empty">セッションを準備しています…</div>}
       </div>
-      {sent
-        ? <p className="empty-hint">右のセッションに入力しました。内容を確認して Enter で送信してください。</p>
-        : (
-          <div className="form-actions">
-            <button type="button" onClick={onClose}>閉じる</button>
-            <button type="submit" className="primary-btn" disabled={!prompt.trim()}>Claude Codeセッションに送る</button>
-          </div>
-        )}
-    </form>
+      <div className="form-actions">
+        <button type="button" onClick={onClose}>閉じる</button>
+      </div>
+    </div>
   );
 }
 
