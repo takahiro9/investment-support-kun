@@ -242,6 +242,38 @@ def cmd_update_snapshot(args: argparse.Namespace) -> None:
     print(json.dumps(fm, ensure_ascii=False))
 
 
+def cmd_update_driver_tree(args: argparse.Namespace) -> None:
+    try:
+        driver_tree = json.loads(args.driver_tree)
+    except json.JSONDecodeError as e:
+        fail([f"--driver-tree must be valid JSON: {e}"])
+        return
+
+    node_ids = [node.get("id") for node in driver_tree]
+    errors = []
+    if len(node_ids) != len(set(node_ids)):
+        errors.append("driverTree node ids must be unique")
+    valid_ids = set(node_ids) | {None}
+    for node in driver_tree:
+        if node.get("parentId") not in valid_ids:
+            errors.append(f"node '{node.get('id')}' has unknown parentId: {node.get('parentId')}")
+    if errors:
+        fail(errors)
+
+    try:
+        fm, body = vault.read_entity("companies", args.id)
+    except FileNotFoundError:
+        fail([f"Company not found: {args.id}"])
+        return
+
+    fm["driverTree"] = driver_tree
+    fm["updatedAt"] = vault.now_iso()
+    vault.write_entity("companies", args.id, fm, body=body)
+    idx.upsert("companies", _company_index_row(fm))
+
+    print(json.dumps(fm, ensure_ascii=False))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Company CRUD")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -275,6 +307,11 @@ def main() -> None:
     p_update_snapshot.add_argument("--as-of", required=True)
     p_update_snapshot.add_argument("--summary", required=True)
     p_update_snapshot.set_defaults(func=cmd_update_snapshot)
+
+    p_update_driver_tree = sub.add_parser("update-driver-tree")
+    p_update_driver_tree.add_argument("--id", required=True)
+    p_update_driver_tree.add_argument("--driver-tree", required=True)
+    p_update_driver_tree.set_defaults(func=cmd_update_driver_tree)
 
     args = parser.parse_args()
     args.func(args)

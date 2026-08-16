@@ -1,0 +1,12 @@
+# ビルドコンテキストから除外（イメージには含めない / 実行時は volume マウントで持ち込む）
+.git
+.venv
+**/__pycache__
+**/*.pyc
+.env
+.env.*
+!.env.example
+node_modules
+**/node_modules
+data
+*.db

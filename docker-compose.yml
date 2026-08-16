@@ -1,0 +1,118 @@
+# Claude Code を隔離コンテナ内で auto approve 実行するための構成。
+# (~/Development/CurioSpector の docker-compose.yml を参考に、
+#  investment-support-kun 用に簡略化したもの)
+#
+# 使い方:
+#   1. (任意) 認証情報を用意
+#      - Anthropic API:  .env に ANTHROPIC_API_KEY を記載（.env.example 参照）
+#      - サブスク/OAuth:  コンテナに入ってから `claude login`（claude-config に永続化）
+#   2. Web UI を起動する（起動したまま待機する）:
+#        docker compose up -d
+#      → http://127.0.0.1:8787 （初回起動時に自動で `uv sync` される）
+#      ダッシュボードの Claude Code セッションパネルから spawn する `claude` も
+#      このコンテナ内で動く。
+#   3. (任意) Claude Code をターミナルから直接使う場合は claude サービスに入る:
+#        docker compose exec claude bash
+#      その中で auto approve 実行:
+#        claude --dangerously-skip-permissions
+#      Python 依存関係を入れる場合:
+#        uv sync
+#   4. (任意) イメージ内の Claude Code CLI を最新版に上げたい場合:
+#        docker compose build --build-arg CACHEBUST=$(date +%s) claude
+#        docker compose up -d --force-recreate claude webapp
+#      claude/webapp は同じ image (investment-support-kun-claude) を共有しているため
+#      片方の build で両方に反映される。CACHEBUST（Dockerfile内のARG）を毎回変えることで
+#      `npm install -g @anthropic-ai/claude-code` のレイヤーだけキャッシュを無効化し、
+#      それより前の apt-get 等は再利用して短時間で再ビルドする。
+#
+# 安全性:
+#   - ホストからはコンテナで隔離される（ファイルシステム/プロセス）
+#   - claude サービスは外向き通信を blocklist(denylist) 方式で制限
+#     （docker/init-firewall.sh）。デフォルトで外向き通信は全許可になっており、
+#     明らかに悪用されやすいドメイン群のみ拒否している。allowlist 方式より
+#     安全性は下がる点に注意。
+#   - ワークスペースのみ書き込み可能（その他ホストFSは ro マウントのみ）
+#
+# 拒否ドメインについて:
+#   docker/init-firewall.sh の BLOCKED_DOMAINS に、ペーストサイト・匿名アップローダ・
+#   webhook/OOB bin・URL短縮・IPロガー・トンネリングサービスなど persist しやすい
+#   持ち出し/悪用経路を列挙してある。追加で塞ぎたいドメインがあれば下記
+#   ADDITIONAL_BLOCKED_DOMAINS (カンマ区切り) か BLOCKED_DOMAINS に追加し、
+#   `docker compose up -d --build` で反映すること。
+services:
+  claude:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: investment-support-kun-claude
+    # exec で対話シェルを使うため確保しておく
+    stdin_open: true
+    tty: true
+    init: true
+    environment:
+      # ファイアウォール (1=有効)。一時的に外す場合は 0
+      ENABLE_FIREWALL: 1
+      TZ: Asia/Tokyo
+      # 追加で拒否したいドメインをカンマ区切りで指定（例: "evil.example.com,badcdn.example"）
+      ADDITIONAL_BLOCKED_DOMAINS: ""
+    env_file:
+      # ANTHROPIC_API_KEY 等を .env から読み込む（存在すれば）
+      - path: .env
+        required: false
+    # ファイアウォール(iptables/ipset)に必要。DinD は使わないので privileged は不要。
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      # ワークスペース本体。ここだけ読み書き可能
+      - .:/workspace
+      # ホスト(macOS)の .venv はプラットフォームが異なり中で使えないため、
+      # 匿名 volume で上書きしてコンテナ専用の空の .venv にする。
+      # コンテナ内で `uv sync` を実行して作り直すこと。
+      - /workspace/.venv
+      # Claude Code の設定・認証を永続化（OAuth ログイン状態を保持）。
+      # webapp サービスとも共有し、どちらから spawn した `claude` も同じログイン状態を使う。
+      - claude-config:/home/claude/.claude
+      # git 用に SSH 鍵を読み取り専用でマウント（github.com を許可ドメインに
+      # 追加した後、push/pull で使う想定）
+      - ${HOME}/.ssh:/home/claude/.ssh:ro
+    working_dir: /workspace
+
+  # investment-support-kun の Web UI (scripts/serve.py + webapp/) をホスト側
+  # ブラウザから使うためのサービス。claude サービスと同じ image・同じ
+  # Vault(bind mount) を使うが、Claude Code 自体は動かさない
+  # （ダッシュボードから spawn される `claude` セッションはこのコンテナ内で
+  # 動く）ので firewall/NET_ADMIN は不要。
+  # 注意: init-firewall.sh は INPUT をデフォルト DROP にするため、有効化すると
+  # ホストからのポートフォワード経由アクセス（eth0 経由の新規着信）まで
+  # 塞いでしまい Web UI に到達できなくなる。webapp では必ず無効のままにする。
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: investment-support-kun-claude
+    environment:
+      ENABLE_FIREWALL: 0
+      TZ: Asia/Tokyo
+      # serve.py はデフォルト 127.0.0.1 バインド（ローカル専用）。コンテナ内では
+      # コンテナの外(ホスト)から届いた通信は loopback ではなく eth0 に来るため、
+      # 0.0.0.0 で listen させる。ホスト側は下記 ports で 127.0.0.1 のみに絞り、
+      # 「認証なし・ローカル専用」という前提を保つ。
+      INVESTMENT_SUPPORT_KUN_WEBAPP_HOST: "0.0.0.0"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - .:/workspace
+      # claude サービスとは別コンテナ専用 venv（プラットフォームが異なるため
+      # 共有できない）。起動時に command 側で `uv sync` する。
+      - /workspace/.venv
+      - claude-config:/home/claude/.claude
+    working_dir: /workspace
+    command: ["bash", "-lc", "uv sync && exec uv run python scripts/serve.py"]
+    # ホストの 127.0.0.1 のみに公開（外部ネットワークからは届かない）
+    ports:
+      - "127.0.0.1:8787:8787"
+
+volumes:
+  claude-config:
