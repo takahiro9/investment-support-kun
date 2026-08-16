@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- 企業追加フォームをプロンプト送信の中継からClaude Codeセッションの直接ptyコンソール埋め込みに変更
 - Companyが直接持っていた`driverTree`/`currentSnapshot`をBusiness（事業）エンティティへ切り出し、Thesisに任意の`businessId`を追加
 - Thesisから`consensusView`/`variant`/`whyMispriced`を廃止し、Source/Signal/Findingのmarket区分（株価・バリュエーション・アナリストコンセンサス）を削除
 - StrategyRecommendationから`pricedIn`（市場の織り込み度）を廃止

@@ -34,10 +34,12 @@ import pty_runtime
 
 WEBAPP_DIR = Path(__file__).resolve().parent.parent / "webapp"
 
-# A "concept" a Claude session can be scoped to. Only Company for now — the
-# dashboard's home entity — but kept as a table (not a hardcoded string) so
-# it's cheap to open sessions on other entities later.
-CONCEPT_ENTITY = {"company": "companies"}
+# A "concept" a Claude session can be scoped to. "company" is the dashboard's
+# home entity; "global" is a Company-independent session (used e.g. before
+# any Company exists yet, to register the first one) with no backing Vault
+# entity. Kept as a table (not a hardcoded string) so it's cheap to open
+# sessions on other entities later.
+CONCEPT_ENTITY = {"company": "companies", "global": None}
 
 _STATE_ENTITIES = [
     "companies", "sectors", "themes", "theses", "signals",
@@ -70,6 +72,8 @@ def read_state() -> dict:
 # --- Claude sessions ---------------------------------------------------------
 
 def _concept_title(concept_type: str, concept_id: str) -> str | None:
+    if concept_type == "global":
+        return "全社共通"
     entity_type = CONCEPT_ENTITY.get(concept_type)
     if entity_type is None:
         return None
@@ -84,6 +88,11 @@ def _claude_context(concept_type: str, concept_id: str) -> str:
     """A short system-prompt addendum so a freshly spawned `claude` session
     already knows which Company it's discussing, instead of the user having
     to paste an id."""
+    if concept_type == "global":
+        return (
+            "## このセッションは全社共通（特定のCompanyに紐付かない）\n"
+            "register-company / register-sector など、Company横断のskillを使うためのセッション。"
+        )
     entity_type = CONCEPT_ENTITY.get(concept_type)
     if entity_type is None:
         return ""
@@ -109,6 +118,7 @@ def _open_pty(session_id: str, is_new: bool):
     if row is None:
         raise KeyError(f"unknown session {session_id}")
     args = ["--session-id", session_id] if is_new else ["--resume", session_id]
+    args += ["--permission-mode", "auto"]
     context = _claude_context(row["conceptType"], row["conceptId"])
     if context:
         args += ["--append-system-prompt", context]
