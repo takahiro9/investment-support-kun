@@ -160,6 +160,7 @@ function SessionsProvider({ conceptType, conceptId, conceptTitle, children }) {
   const [selected, setSelected] = React.useState(null);
   const [creating, setCreating] = React.useState(false);
   const [pendingDelete, setPendingDelete] = React.useState(null);
+  const [panelOpen, setPanelOpen] = React.useState(false);
 
   const refresh = React.useCallback(async () => {
     if (!conceptId) { setSessions([]); return; }
@@ -214,12 +215,16 @@ function SessionsProvider({ conceptType, conceptId, conceptTitle, children }) {
       id = row && row.id;
     }
     if (!id) return;
+    setPanelOpen(true);
     await api("POST", `/api/claude/sessions/${id}/input`, { data: text }).catch(() => {});
   }, [selected, create]);
 
   const ctxValue = React.useMemo(
-    () => ({ sessions, selected, setSelected, creating, create, rename, requestDelete: setPendingDelete, seedPrompt, conceptTitle }),
-    [sessions, selected, creating, create, seedPrompt, conceptTitle]
+    () => ({
+      sessions, selected, setSelected, creating, create, rename, requestDelete: setPendingDelete, seedPrompt, conceptTitle,
+      panelOpen, openPanel: () => setPanelOpen(true), closePanel: () => setPanelOpen(false),
+    }),
+    [sessions, selected, creating, create, seedPrompt, conceptTitle, panelOpen]
   );
 
   return (
@@ -238,34 +243,59 @@ function SessionsProvider({ conceptType, conceptId, conceptTitle, children }) {
   );
 }
 
-/* The visible right-hand column: session tab strip + terminal for whichever
-   session is selected. A thin view over SessionsProvider's context. */
-function SessionsPanel() {
-  const { sessions, selected, setSelected, creating, create, rename, requestDelete, conceptTitle } = useSessions();
+/* Floating trigger that opens the sessions modal. Always mounted (so it's
+   reachable even before any deep-dive/seedPrompt has opened the modal for
+   you), with a status dot summarizing the busiest session in scope. */
+function SessionsLauncher() {
+  const { sessions, panelOpen, openPanel, conceptTitle } = useSessions();
+  if (panelOpen) return null;
+  const priority = ["thinking", "unread", "waiting", "idle", "exited"];
+  const summary = sessions
+    .map((s) => s.status)
+    .sort((a, b) => priority.indexOf(a) - priority.indexOf(b))[0];
   return (
-    <aside className="sessions-panel">
-      <div className="sessions-header">
-        <span className="sessions-title">Claude Code — <b>{conceptTitle || "（未選択）"}</b></span>
-        <button className="new-session-btn" onClick={() => create("")} disabled={creating}>+ 新規セッション</button>
-      </div>
-      <div className="session-tabs">
-        {sessions.length === 0 && <span className="sessions-empty">まだセッションがありません。「+ 新規セッション」で開始してください。</span>}
-        {sessions.map((s) => (
-          <SessionTab
-            key={s.id} s={s} active={s.id === selected}
-            onSelect={() => setSelected(s.id)}
-            onRename={(label) => rename(s.id, label)}
-            onDelete={() => requestDelete(s)}
-          />
-        ))}
-      </div>
-      <div className="terminal-wrap">
-        {selected
-          ? <SessionTerminal key={selected} sessionId={selected} />
-          : <div className="terminal-empty">セッションを選ぶか、新規に開始してください。<br />ダッシュボードの「深掘り」ボタンからも自動で開始できます。</div>}
-      </div>
-    </aside>
+    <button type="button" className="sessions-launcher" onClick={openPanel}>
+      <span className={`status-dot ${summary || ""}`} />
+      Claude Code — {conceptTitle || "（未選択）"}
+      {sessions.length > 0 && <span className="sessions-launcher-count">{sessions.length}</span>}
+    </button>
   );
 }
 
-Object.assign(window, { SessionsCtx, useSessions, SessionsProvider, SessionsPanel, SESSION_STATUS_LABEL });
+/* The Claude Code sessions surface: session tab strip + terminal for
+   whichever session is selected, presented as a modal that floats over the
+   whole screen (opened via SessionsLauncher or seedPrompt) instead of a
+   permanently-docked sidebar, so it can use most of the viewport width. */
+function SessionsPanel() {
+  const { sessions, selected, setSelected, creating, create, rename, requestDelete, conceptTitle, panelOpen, closePanel } = useSessions();
+  if (!panelOpen) return null;
+  return (
+    <div className="sessions-scrim" onClick={closePanel}>
+      <aside className="sessions-panel" onClick={(e) => e.stopPropagation()}>
+        <div className="sessions-header">
+          <span className="sessions-title">Claude Code — <b>{conceptTitle || "（未選択）"}</b></span>
+          <button className="new-session-btn" onClick={() => create("")} disabled={creating}>+ 新規セッション</button>
+          <button className="sessions-close-btn" onClick={closePanel} aria-label="閉じる">×</button>
+        </div>
+        <div className="session-tabs">
+          {sessions.length === 0 && <span className="sessions-empty">まだセッションがありません。「+ 新規セッション」で開始してください。</span>}
+          {sessions.map((s) => (
+            <SessionTab
+              key={s.id} s={s} active={s.id === selected}
+              onSelect={() => setSelected(s.id)}
+              onRename={(label) => rename(s.id, label)}
+              onDelete={() => requestDelete(s)}
+            />
+          ))}
+        </div>
+        <div className="terminal-wrap">
+          {selected
+            ? <SessionTerminal key={selected} sessionId={selected} />
+            : <div className="terminal-empty">セッションを選ぶか、新規に開始してください。<br />ダッシュボードの「深掘り」ボタンからも自動で開始できます。</div>}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+Object.assign(window, { SessionsCtx, useSessions, SessionsProvider, SessionsPanel, SessionsLauncher, SESSION_STATUS_LABEL });
