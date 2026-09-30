@@ -2,13 +2,13 @@
 
 ## 概要
 
-投資判断の中心単位。ticker・市場区分・セクター・決算期などのIDを持つマスタエンティティ。1つのCompanyに対し、複数のSource（IR、業界ニュース等）・複数の[Business](business.md)（個別事業単位）・複数のThesisが紐づく。
+意思決定理解の中心単位。上場区分・ticker・市場区分・セクター・決算期などのIDを持つマスタエンティティ。上場企業に加えて、業界全体の趨勢を読むために追跡する未上場企業も同じ形で扱う。1つのCompanyに対し、複数のSource（IR、業界ニュース等）・複数の[Business](business.md)（個別事業単位）・複数のThesisが紐づく。
 
 事業構造の分解木（driverTree）と事業単位の現在地スナップショットは[Business](business.md)が持つ。Companyは「銘柄としてのマスタ情報」に専念し、「実際にどんな事業から構成されているか」はBusinessに委ねる（詳細は[Business](business.md)を参照）。
 
 ### 1つのCompanyは複数のSectorに属してよい
 
-銘柄としての市場区分（`market`）は単一だが、事業の実態は複数のSectorにまたがることが珍しくない（例: 味の素は食品企業として分類されるが、ABF（半導体パッケージング材料）事業も持つ）。この複数事業性を見落として単一セクターの企業として理解すると、事業構造の解像度が粗くなる。そのため`sectorId`は単一FKにせず、`sectorIds`（複数可）+ `primarySectorId`（既定のヘッドライン分類）の形で持つ。
+上場企業の市場区分（`market`）は単一だが、事業の実態は複数のSectorにまたがることが珍しくない（例: 味の素は食品企業として分類されるが、ABF（半導体パッケージング材料）事業も持つ）。この複数事業性を見落として単一セクターの企業として理解すると、事業構造の解像度が粗くなる。そのため`sectorId`は単一FKにせず、`sectorIds`（複数可）+ `primarySectorId`（既定のヘッドライン分類）の形で持つ。
 
 - `sectorIds` — このCompanyが実質的な事業を持つSectorすべて（パイロットの「同一セクター内3〜5社」やSector別の銘柄一覧は、いずれかの`sectorIds`に一致するCompanyを対象にする）。配下の各[Business](business.md)の`sectorId`は、必ずこの`sectorIds`に含まれる
 - `primarySectorId` — 市場が主にどのセクターの企業として評価しているか（`sectorIds`のいずれか1つ）。あくまで「市場からの見え方」であり、実際にどの事業が中核かを表す[Business](business.md)`.isPrimary`とは独立している
@@ -26,8 +26,9 @@ Companyは日付つきの要約フィールド（`currentSnapshot`）を持つ�
 | フィールド | 型 | 必須 | 説明 |
 |---|---|---|---|
 | `id` | string (UUID) | ✅ | 一意識別子 |
-| `ticker` | string | ✅ | 証券コード |
-| `market` | string | ✅ | 市場区分（例: "東証プライム"） |
+| `listingStatus` | enum | ✅ | 上場区分。`listed`（上場）/ `unlisted`（未上場）。既存データで未設定の場合は`listed`として扱う |
+| `ticker` | string | 上場のみ✅ | 証券コード。未上場ではnull |
+| `market` | string | 上場のみ✅ | 市場区分（例: "東証プライム"）。未上場ではnull |
 | `sectorIds` | string[] (FK) | ✅ | 実質的な事業を持つ [Sector](sector.md) 群（1つ以上） |
 | `primarySectorId` | string (FK) | ✅ | ヘッドライン分類として使うSector。`sectorIds`のいずれか1つ |
 | `name` | string | ✅ | 企業名 |
@@ -51,7 +52,9 @@ Companyは日付つきの要約フィールド（`currentSnapshot`）を持つ�
 
 ## 不変条件・ビジネスルール
 
-- `ticker` はシステム全体で一意
+- `listingStatus=listed` のとき`ticker`と`market`は必須、`unlisted` のときは`ticker`と`market`を持たない（null）
+- `ticker` は（持つ場合）システム全体で一意。未上場企業は`ticker`を持たないため、未上場同士で同名の`name`は重複登録しない
+- 未上場企業は決算開示が限られるため、Finding/Signalの主な出所は報道・資金調達発表・業界資料などになる（Company自体の構造は上場企業と同一）
 - `sectorIds` は1つ以上。各要素は[Sector](sector.md)のidを指す（実在チェックは行わない。参照先が見つからない場合は表示時に`missing`として顕在化する）。要素の重複は持たない
 - `primarySectorId` は必須で、`sectorIds` に含まれる要素のいずれかでなければならない
 - Company作成時、少なくとも1つの[Business](business.md)（`isPrimary=true`）が同時に作成される（Companyは単独では存在せず、常に1つ以上のBusinessを伴う）

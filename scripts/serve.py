@@ -103,9 +103,9 @@ def _claude_context(concept_type: str, concept_id: str) -> str:
     if concept_type == "company":
         snapshot = (fm.get("currentSnapshot") or {}).get("summary", "")
         lines = [
-            f"## このセッションの対象Company: {fm.get('name', '')}（{fm.get('ticker', '')}）",
+            f"## このセッションの対象Company: {fm.get('name', '')}（{fm.get('ticker') or '未上場'}）",
             f"id: {concept_id}",
-            f"市場: {fm.get('market', '')}",
+            f"市場: {fm.get('market') or '未上場'}",
         ]
         if snapshot:
             lines += ["", "現在地スナップショット:", snapshot]

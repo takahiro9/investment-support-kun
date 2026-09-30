@@ -23,7 +23,7 @@ function Topbar({ state, selectedCompanyId, onSelectCompany, view, onShowList })
         >
           <option value="" disabled>企業を選択…</option>
           {companies.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}（{c.ticker}）</option>
+            <option key={c.id} value={c.id}>{c.name}（{c.listingStatus === "unlisted" ? "未上場" : c.ticker}）</option>
           ))}
         </select>
       )}

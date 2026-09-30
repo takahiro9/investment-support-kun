@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Companyに`listingStatus`を追加し、未上場企業（ticker/market なし）を登録・表示できるようにした
 - `docker compose up`でWeb UI（claude/webappサービス）が起動するDocker構成を追加
 - 企業追加フォームをプロンプト送信の中継からClaude Codeセッションの直接ptyコンソール埋め込みに変更
 - Web UIのClaude Codeセッションパネルを、常時表示の右サイドバーからモーダル表示に変更した

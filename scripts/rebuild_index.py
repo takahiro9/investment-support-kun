@@ -64,8 +64,9 @@ def rebuild() -> dict:
     company_rows = [
         {
             "id": fm["id"],
-            "ticker": fm["ticker"],
-            "market": fm["market"],
+            "listingStatus": fm.get("listingStatus") or "listed",
+            "ticker": fm.get("ticker"),
+            "market": fm.get("market"),
             "name": fm["name"],
             "sectorIds": fm.get("sectorIds") or [],
             "primarySectorId": fm.get("primarySectorId"),

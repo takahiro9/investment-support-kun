@@ -3,7 +3,8 @@
   uv run python scripts/companies.py register --id <uuid> --ticker 1234 \
       --market "東証プライム" --name "サンプル株式会社" --fiscal-year-end 03-31 \
       --sector-ids <uuid1>,<uuid2> --primary-sector-id <uuid1> \
-      [--driver-tree '[...]'] [--body "任意の本文"]
+      [--listing-status listed|unlisted] [--driver-tree '[...]'] [--body "任意の本文"]
+  (unlisted の場合は --ticker/--market を指定しない)
   uv run python scripts/companies.py list [--sector-id <uuid>]
   uv run python scripts/companies.py view --id <uuid>
   uv run python scripts/companies.py snapshot-context --id <uuid>
@@ -28,9 +29,17 @@ def fail(errors: list[str]) -> None:
 def cmd_register(args: argparse.Namespace) -> None:
     sector_ids = [s.strip() for s in args.sector_ids.split(",") if s.strip()]
 
+    ticker = (args.ticker or "").strip()
+    market = (args.market or "").strip()
+
     errors = []
-    if not args.ticker.strip():
-        errors.append("ticker must not be empty")
+    if args.listing_status == "listed":
+        if not ticker:
+            errors.append("ticker must not be empty for a listed Company")
+        if not market:
+            errors.append("market must not be empty for a listed Company")
+    elif ticker or market:
+        errors.append("ticker and market must be omitted for an unlisted Company")
     if not sector_ids:
         errors.append("sectorIds must include at least one Sector")
     if args.primary_sector_id not in sector_ids:
@@ -38,8 +47,14 @@ def cmd_register(args: argparse.Namespace) -> None:
     if errors:
         fail(errors)
 
-    if idx.find_by("companies", ticker=args.ticker):
-        fail([f"a Company with ticker '{args.ticker}' is already registered"])
+    if ticker:
+        if idx.find_by("companies", ticker=ticker):
+            fail([f"a Company with ticker '{ticker}' is already registered"])
+    elif any(
+        cfm.get("listingStatus") == "unlisted" and cfm.get("name") == args.name
+        for _, cfm, _ in vault.list_entities("companies")
+    ):
+        fail([f"an unlisted Company named '{args.name}' is already registered"])
 
     try:
         primary_sector_fm, _ = vault.read_entity("sectors", args.primary_sector_id)
@@ -55,8 +70,9 @@ def cmd_register(args: argparse.Namespace) -> None:
     now = vault.now_iso()
     frontmatter = {
         "id": args.id,
-        "ticker": args.ticker,
-        "market": args.market,
+        "listingStatus": args.listing_status,
+        "ticker": ticker or None,
+        "market": market or None,
         "sectorIds": sector_ids,
         "primarySectorId": args.primary_sector_id,
         "name": args.name,
@@ -280,8 +296,9 @@ def main() -> None:
 
     p_register = sub.add_parser("register")
     p_register.add_argument("--id", required=True)
-    p_register.add_argument("--ticker", required=True)
-    p_register.add_argument("--market", required=True)
+    p_register.add_argument("--listing-status", choices=["listed", "unlisted"], default="listed")
+    p_register.add_argument("--ticker")
+    p_register.add_argument("--market")
     p_register.add_argument("--name", required=True)
     p_register.add_argument("--fiscal-year-end", required=True)
     p_register.add_argument("--sector-ids", required=True)

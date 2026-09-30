@@ -15,8 +15,8 @@
 
 ## 基本フロー（正常系）
 
-1. 投資家は、証券コード（`ticker`）、市場区分（`market`）、企業名（`name`）、決算期（`fiscalYearEnd`）、実質的な事業を持つ業種群（`sectorIds`、1つ以上）、およびそのうちヘッドライン分類とする1つ（`primarySectorId`）を入力し、登録をリクエストする。
-2. システムは、`ticker` が空文字列でなく、システム全体で一意であることを検証する。
+1. 投資家は、上場区分（`listingStatus`）、上場企業なら証券コード（`ticker`）と市場区分（`market`）、企業名（`name`）、決算期（`fiscalYearEnd`）、実質的な事業を持つ業種群（`sectorIds`、1つ以上）、およびそのうちヘッドライン分類とする1つ（`primarySectorId`）を入力し、登録をリクエストする。
+2. システムは、上場企業なら`ticker`・`market`が空でなく`ticker`がシステム全体で一意であること、未上場企業なら`ticker`・`market`が指定されておらず同名の未上場企業が未登録であることを検証する。
 3. システムは、`sectorIds` が1つ以上であり、`primarySectorId` が `sectorIds` に含まれることを検証する。
 4. システムは、`primarySectorId` が指す `Sector` の `driverTreeTemplate` を取得し、これをコピーして `driverTree` の初期値とする。
 5. システムは、新しい `Company` エンティティを作成し、保存する。
@@ -24,7 +24,7 @@
 
 ## 代替フロー・例外フロー
 
-- **2a. `ticker` が未入力、または既に登録済みの場合:**
+- **2a. 上場企業で`ticker`/`market`が未入力・`ticker`が登録済み、または未上場企業で`ticker`/`market`が指定されている・同名の未上場企業が登録済みの場合:**
   システムはエラーメッセージを返し、処理を中断する。
 - **3a. `sectorIds` が空、または `primarySectorId` が `sectorIds` に含まれない場合:**
   システムはエラーメッセージを返し、入力を促す。

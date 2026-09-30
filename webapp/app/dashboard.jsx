@@ -243,8 +243,12 @@ function CompanyDashboard({ company }) {
       <section className="card company-header">
         <div className="row1">
           <h1 className="company-name">{company.name}</h1>
-          <span className="ticker">{company.ticker}</span>
-          <span className="chip">{company.market}</span>
+          {company.listingStatus === "unlisted"
+            ? <span className="chip">未上場</span>
+            : <>
+                <span className="ticker">{company.ticker}</span>
+                <span className="chip">{company.market}</span>
+              </>}
           {primarySector && <span className="chip">主セクター: {primarySector.name}</span>}
         </div>
         {snapshot && <p className="snapshot-text">{snapshot.summary}</p>}

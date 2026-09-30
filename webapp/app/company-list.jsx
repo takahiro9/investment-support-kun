@@ -14,7 +14,7 @@ function CompanyRow({ company, sectorById, thesisCount, onOpen }) {
     <tr className="company-row" onClick={() => onOpen(company.id)}>
       <td className="company-cell">
         <div className="company-cell-name">{company.name}</div>
-        <div className="company-cell-sub">{company.ticker}／{company.market}</div>
+        <div className="company-cell-sub">{company.listingStatus === "unlisted" ? "未上場" : `${company.ticker}／${company.market}`}</div>
       </td>
       <td>{primarySector ? <span className="chip">{primarySector.name}</span> : <span className="empty-hint">—</span>}</td>
       <td className="num">{thesisCount}</td>

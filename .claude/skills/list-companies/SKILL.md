@@ -14,7 +14,7 @@ Spec: `domain/usecase/investor/list_companies/usecase.md`
    ```
    uv run python scripts/companies.py list [--sector-id "<sectorId>"]
    ```
-3. stdout の JSON 配列（各要素: `id`, `ticker`, `market`, `name`, `sectorIds`, `primarySectorId`, `fiscalYearEnd`, `createdAt`, `updatedAt`）を、投資家が読みやすい表形式に整形して提示する。
+3. stdout の JSON 配列（各要素: `id`, `listingStatus`, `ticker`, `market`, `name`, `sectorIds`, `primarySectorId`, `fiscalYearEnd`, `createdAt`, `updatedAt`）を、投資家が読みやすい表形式に整形して提示する。
 4. 0件の場合は「登録済みの対象企業はまだありません」と伝え、`register-company` skill での新規登録を提案する。
 
 ## 注意

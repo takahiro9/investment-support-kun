@@ -27,6 +27,7 @@ TABLE_SCHEMAS: dict[str, pa.Schema] = {
     "companies": pa.schema(
         [
             ("id", pa.string()),
+            ("listingStatus", pa.string()),
             ("ticker", pa.string()),
             ("market", pa.string()),
             ("name", pa.string()),

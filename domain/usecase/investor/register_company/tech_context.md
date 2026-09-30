@@ -14,8 +14,9 @@
 ```yaml
 ---
 id: <uuid>
-ticker: "1234"
-market: "東証プライム"
+listingStatus: listed   # listed | unlisted
+ticker: "1234"           # 未上場ならnull
+market: "東証プライム"    # 未上場ならnull
 sectorIds:
   - <uuid>
 primarySectorId: <uuid>
@@ -41,7 +42,8 @@ updatedAt: 2024-01-01T00:00:00Z
 
 - UUID は呼び出し側（skill の `uuidgen`）で生成して Python スクリプトに渡す
 - バリデーション（Python スクリプト側で実施）:
-  - `ticker` の空文字チェック・システム全体での一意性チェック
+  - `listingStatus`（`listed`/`unlisted`）に応じた`ticker`/`market`の必須・禁止チェック
+  - 上場企業は`ticker`のシステム全体での一意性チェック、未上場企業は同名の未上場企業がないことのチェック
   - `sectorIds` が1つ以上であること、各要素が既存の Sector を指すこと
   - `primarySectorId` が `sectorIds` に含まれること
 - `driverTree` は指定がなければ `primarySectorId` が指す Sector の `driverTreeTemplate` をそのままコピーして初期化する（`sectorId` フィールドはコピー元がルート直下のセグメントノードに設定していればそのまま引き継ぐ）
